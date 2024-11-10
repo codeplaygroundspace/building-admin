@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import {
   Card,
   CardContent,
@@ -5,28 +6,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ReactNode } from "react";
 
 interface CardWrapperProps {
   title: ReactNode;
-  content: ReactNode;
   footer?: ReactNode;
   className?: string;
+  children: ReactNode;
 }
 
 export default function CardWrapper({
   title,
-  content,
   footer,
   className = "",
+  children,
 }: CardWrapperProps) {
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>{content}</CardContent>
-      {footer && <CardFooter>{footer}</CardFooter>}
-    </Card>
+    <section>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>{children}</CardContent>
+        {footer && <CardFooter>{footer}</CardFooter>}
+      </Card>
+    </section>
   );
 }

@@ -1,8 +1,8 @@
-import AlertWrapper from "./ui-custom/AlertWrapper";
+import CardWrapper from "./ui-custom/CardWrapper";
 
 export default function ContactInfo() {
   return (
-    <AlertWrapper title="Datos de Interés">
+    <CardWrapper title="Información de contacto">
       <ul>
         <li>
           <strong>Administracion:</strong> Demo name - contacto@demo.com -
@@ -12,6 +12,6 @@ export default function ContactInfo() {
           <strong>Limpieza:</strong> Júpiter, tel. 12903232
         </li>
       </ul>
-    </AlertWrapper>
+    </CardWrapper>
   );
 }
