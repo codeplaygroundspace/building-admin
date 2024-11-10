@@ -1,4 +1,4 @@
-import CardWrapper from "./CardWrapper";
+import CardWrapper from "./ui-custom/CardWrapper";
 
 export default function InfoBox() {
   return (
