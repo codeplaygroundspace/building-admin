@@ -1,64 +1,74 @@
 import CardWrapper from "./ui-custom/CardWrapper";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
 
 export default function FundSummary() {
+  const fundSummary = [
+    {
+      category: "Gastos comunes",
+      items: [
+        { label: "Saldo anterior", amount: 59138.77 },
+        { label: "Cobranza", amount: 8691.01 },
+        { label: "Gastos", amount: 27376.74 },
+        { label: "Créditos", amount: 0.0 },
+        { label: "Débitos", amount: 10549.4 },
+      ],
+    },
+    {
+      category: "Fondo de reserva",
+      items: [
+        { label: "Saldo anterior", amount: 338491.83 },
+        { label: "Cobranza", amount: 27642.99 },
+        { label: "Gastos", amount: 283579.0 },
+        { label: "Créditos", amount: 0.0 },
+        { label: "Débitos", amount: 0.0 },
+      ],
+    },
+  ];
+
+  const totals = {
+    gastosComunes: 112459.46,
+    cajaReserva: 82555.82,
+    overall: 112459.46 + 82555.82,
+  };
+
   return (
     <CardWrapper title="Resumen por Fondo">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Concepto</TableHead>
-            <TableHead>Gastos Comunes</TableHead>
-            <TableHead>Caja Reserva</TableHead>
-            <TableHead>Total</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>Saldo Anterior</TableCell>
-            <TableCell>$59,138.77</TableCell>
-            <TableCell>$338,491.83</TableCell>
-            <TableCell>$397,630.60</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Cobranza</TableCell>
-            <TableCell>$8,691.01</TableCell>
-            <TableCell>$27,642.99</TableCell>
-            <TableCell>$36,334.00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Gastos</TableCell>
-            <TableCell>$27,376.74</TableCell>
-            <TableCell>$283,579.00</TableCell>
-            <TableCell>$310,955.74</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Créditos</TableCell>
-            <TableCell>$0.00</TableCell>
-            <TableCell>$0.00</TableCell>
-            <TableCell>$0.00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Débitos</TableCell>
-            <TableCell>$10,549.40</TableCell>
-            <TableCell>$0.00</TableCell>
-            <TableCell>$10,549.40</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-bold">SALDO ACTUAL</TableCell>
-            <TableCell className="font-bold">$29,903.64</TableCell>
-            <TableCell className="font-bold">$82,555.82</TableCell>
-            <TableCell className="font-bold">$112,459.46</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      {fundSummary.map((fund, index) => (
+        <div key={index} className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">{fund.category}</h2>
+          <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
+            {fund.items.map((item, idx) => (
+              <div key={idx} className="flex justify-between">
+                <p className="text-lg">{item.label}:</p>
+                <p className="text-2xl font-semibold">
+                  <span className="text-sm">$</span>
+                  {item.amount.toFixed(2)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <Separator className="my-6" />
+
+      {/* Totals */}
+      <div className="space-y-4">
+        <div className="flex justify-between">
+          <h3 className="text-lg font-semibold">Total Gastos Comunes:</h3>
+          <p className="text-lg font-bold">
+            ${totals.gastosComunes.toFixed(2)}
+          </p>
+        </div>
+        <div className="flex justify-between">
+          <h3 className="text-lg font-semibold">Total Caja Reserva:</h3>
+          <p className="text-lg font-bold">${totals.cajaReserva.toFixed(2)}</p>
+        </div>
+        <div className="flex justify-between">
+          <h3 className="text-lg font-semibold">Total General:</h3>
+          <p className="text-lg font-bold">${totals.overall.toFixed(2)}</p>
+        </div>
+      </div>
     </CardWrapper>
   );
 }

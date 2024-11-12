@@ -9,11 +9,11 @@ import ApartmentFinancialBreakdown from "@/components/FinApartmentFinancialBreak
 export default function Home() {
   return (
     <>
-      <ExpenseBreakdown />
-      <InfoDebt />
-      <CreditsDebitsBreakdown />
       <FundSummary />
+      <ExpenseBreakdown />
+      <CreditsDebitsBreakdown />
       <ApartmentFinancialBreakdown />
+      <InfoDebt />
       <PaymentsInfo />
       <ContactInfo />
     </>

@@ -54,11 +54,11 @@ export default function ExpenseBreakdown() {
   );
 
   return (
-    <CardWrapper title="Desglose de Gastos">
+    <CardWrapper title="Detalle de Gastos ↗️">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
-        <p className="text-2xl font-bold">
-          <span className="text-sm">$</span>
+        <p className="text-2xl font-bold text-red-500">
+          <span className="text-sm ">$</span>
           {totalExpenses.toFixed(2)}
         </p>
       </div>
