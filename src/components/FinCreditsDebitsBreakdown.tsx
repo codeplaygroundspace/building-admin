@@ -46,7 +46,7 @@ export default function CreditsDebitsBreakdown() {
   );
 
   return (
-    <CardWrapper title="Detalle de Créditos/Débitos">
+    <CardWrapper title="Detalle de créditos y débitos">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
         <p className="text-2xl font-bold">

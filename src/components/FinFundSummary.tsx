@@ -32,14 +32,14 @@ export default function FundSummary() {
   };
 
   return (
-    <CardWrapper title="Resumen por Fondo">
+    <CardWrapper title="Resumen">
       {fundSummary.map((fund, index) => (
         <div key={index} className="mb-6">
           <h2 className="text-xl font-semibold mb-4">{fund.category}</h2>
           <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
             {fund.items.map((item, idx) => (
               <div key={idx} className="flex justify-between">
-                <p className="text-lg">{item.label}:</p>
+                <p className="text-lg">{item.label}</p>
                 <p className="text-2xl font-semibold">
                   <span className="text-sm">$</span>
                   {item.amount.toFixed(2)}
@@ -55,17 +55,17 @@ export default function FundSummary() {
       {/* Totals */}
       <div className="space-y-4">
         <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total Gastos Comunes:</h3>
+          <h3 className="text-lg font-semibold">Total Gastos comunes</h3>
           <p className="text-lg font-bold">
             ${totals.gastosComunes.toFixed(2)}
           </p>
         </div>
         <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total Caja Reserva:</h3>
+          <h3 className="text-lg font-semibold">Total Fondo de reserva</h3>
           <p className="text-lg font-bold">${totals.cajaReserva.toFixed(2)}</p>
         </div>
         <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total General:</h3>
+          <h3 className="text-lg font-semibold">Total general</h3>
           <p className="text-lg font-bold">${totals.overall.toFixed(2)}</p>
         </div>
       </div>

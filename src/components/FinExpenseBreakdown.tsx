@@ -54,7 +54,7 @@ export default function ExpenseBreakdown() {
   );
 
   return (
-    <CardWrapper title="Detalle de Gastos ↗️">
+    <CardWrapper title="Detalle de gastos ↗️">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
         <p className="text-2xl font-bold text-red-500">
@@ -70,7 +70,7 @@ export default function ExpenseBreakdown() {
               <h3 className="text-lg font-semibold">{expense.title}</h3>
               <p className="text-neutral-500">{expense.description}</p>
             </div>
-            <p className="text-2xl font-bold whitespace-nowrap">
+            <p className="text-2xl font-bold whitespace-nowrap text-red-500">
               {expense.amount.toFixed(2)}
             </p>
           </li>
