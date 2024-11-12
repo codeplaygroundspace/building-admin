@@ -1,45 +1,37 @@
 import CardWrapper from "./ui-custom/CardWrapper";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
 
 export default function InfoDebt() {
+  const debts = [
+    { unit: "006P", description: "Deuda acumulada", amount: 25437.0 },
+    { unit: "006I", description: "Deuda acumulada", amount: 1272.0 },
+  ];
+
+  const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
+
   return (
     <CardWrapper title="Listado de Deudores">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Unidad</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Importe</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>006P</TableCell>
-            <TableCell>Deuda acumulada </TableCell>
-            <TableCell>$25,437.00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>006I</TableCell>
-            <TableCell>Deuda acumulada</TableCell>
-            <TableCell>$1,272.00</TableCell>
-          </TableRow>
-
-          {/* Total */}
-          <TableRow>
-            <TableCell colSpan={2} className="font-bold">
-              Total:
-            </TableCell>
-            <TableCell className="font-bold">$26,709.00</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Total</h2>
+        <p className="text-2xl font-bold">
+          <span className="text-sm">$</span>
+          {totalDebt.toFixed(2)}
+        </p>
+      </div>
+      <Separator className="my-4" />
+      <ul className="space-y-4">
+        {debts.map((debt, index) => (
+          <li key={index} className="flex justify-between items-start">
+            <div className="flex-1 pr-4">
+              <h3 className="text-lg font-semibold">{debt.unit}</h3>
+              <p className="text-neutral-500">{debt.description}</p>
+            </div>
+            <p className="text-2xl font-bold whitespace-nowrap">
+              ${debt.amount.toFixed(2)}
+            </p>
+          </li>
+        ))}
+      </ul>
     </CardWrapper>
   );
 }
