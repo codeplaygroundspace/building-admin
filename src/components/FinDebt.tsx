@@ -13,7 +13,7 @@ export default function InfoDebt() {
     <CardWrapper title="Listado de Deudores">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
-        <p className="text-2xl font-bold">
+        <p className="text-2xl font-bold text-red-500">
           <span className="text-sm">$</span>
           {totalDebt.toFixed(2)}
         </p>
