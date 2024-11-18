@@ -1,55 +1,50 @@
+"use client";
+import { useEffect, useState } from "react";
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
-// import { Badge } from "@/components/ui/badge";
+import { supabase } from "../utils/supabaseClient";
+
+// Define the type for Expense
+interface Expense {
+  category: string;
+  description: string;
+  amount: number;
+}
 
 export default function ExpenseBreakdown() {
-  const expenses = [
-    {
-      title: "U.T.E.",
-      description: "Consumo 23/08/2024 - 23/09/2024",
-      category: "Mantenimiento y consumo",
-      amount: 1052.0,
-    },
-    {
-      title: "U.T.E.",
-      description: "Consumo 23/08/2024 - 23/09/2024 Bomba",
-      category: "Mantenimiento y consumo",
-      amount: 863.0,
-    },
-    {
-      title: "O.S.E.",
-      description: "Consumo 07/09/2024 - 08/10/2024",
-      category: "Mantenimiento y consumo",
-      amount: 2973.0,
-    },
-    {
-      title: "Limpieza",
-      description: "Júpiter Setiembre 2024",
-      category: "Servicios",
-      amount: 4600.0,
-    },
-    {
-      title: "Sanitaria",
-      description: "Patrón, hidrolavado en camaras generales y desagues",
-      category: "Servicios",
-      amount: 13398.0,
-    },
-    {
-      title: "Honorarios",
-      description: "Inmco Octubre 2024",
-      category: "Administración",
-      amount: 4338.0,
-    },
-    {
-      title: "Comisiones",
-      description: "BROU",
-      category: "Banco",
-      amount: 152.74,
-    },
-  ];
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const totalExpenses = expenses.reduce(
-    (sum, expense) => sum + expense.amount,
+  useEffect(() => {
+    async function fetchExpenses() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw new Error(error.message);
+
+        console.log("Fetched data from Supabase:", data);
+        console.log("Supabase error:", error);
+
+        setExpenses(data || []);
+      } catch (err: unknown) {
+        console.log(
+          "😵‍💫 Error fetching expenses:",
+          err instanceof Error ? err.message : "Unknown error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchExpenses();
+  }, []);
+
+  // Calculate total expenses
+  const totalExpenses: number = expenses.reduce(
+    (sum, expense) => sum + (expense.amount || 0),
     0
   );
 
@@ -63,17 +58,23 @@ export default function ExpenseBreakdown() {
         </p>
       </div>
       <Separator className="my-4" />
-      <ul className="space-y-4">
-        {expenses.map((expense, index) => (
-          <li key={index} className="flex justify-between items-start">
-            <div className="flex-1 pr-4">
-              <h3 className="text-lg font-semibold">{expense.title}</h3>
-              <p className="text-neutral-500">{expense.description}</p>
-            </div>
-            <p className="whitespace-nowrap ">{expense.amount.toFixed(2)}</p>
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <p>Cargando datos...</p>
+      ) : expenses.length === 0 ? (
+        <p>No expenses found.</p>
+      ) : (
+        <ul className="space-y-4">
+          {expenses.map((expense, index) => (
+            <li key={index} className="flex justify-between items-start">
+              <div className="flex-1 pr-4">
+                <h3 className="text-lg font-semibold">{expense.category}</h3>
+                <p className="text-neutral-500">{expense.description}</p>
+              </div>
+              <p className="whitespace-nowrap ">{expense.amount.toFixed(2)}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </CardWrapper>
   );
 }
