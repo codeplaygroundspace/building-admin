@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../supabase/supabaseClient";
 
 // Define the type for Expense
 interface Expense {
