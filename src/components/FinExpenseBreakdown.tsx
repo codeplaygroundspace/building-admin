@@ -53,7 +53,7 @@ export default function ExpenseBreakdown() {
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
         <p>
-          <span className="text-sm ">$</span>
+          -$
           {totalExpenses.toFixed(2)}
         </p>
       </div>
@@ -70,7 +70,9 @@ export default function ExpenseBreakdown() {
                 <h3 className="text-lg font-semibold">{expense.category}</h3>
                 <p className="text-neutral-500">{expense.description}</p>
               </div>
-              <p className="whitespace-nowrap ">{expense.amount.toFixed(2)}</p>
+              <p className="whitespace-nowrap ">
+                -${expense.amount.toFixed(2)}
+              </p>
             </li>
           ))}
         </ul>
