@@ -40,7 +40,7 @@ export default function FundSummary() {
             {fund.items.map((item, idx) => (
               <div key={idx} className="flex justify-between">
                 <p className="text-lg">{item.label}</p>
-                <p className="text-2xl font-semibold">
+                <p>
                   <span className="text-sm">$</span>
                   {item.amount.toFixed(2)}
                 </p>

@@ -23,55 +23,39 @@ export default function ApartmentFinancialBreakdown() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <p>Saldo anterior</p>
-            <p className="font-semibold">
-              ${apartmentData.previousBalance.toFixed(2)}
-            </p>
+            <p>${apartmentData.previousBalance.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Pagos</p>
-            <p className="font-semibold">
-              ${apartmentData.payments.toFixed(2)}
-            </p>
+            <p>${apartmentData.payments.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Nuevo saldo</p>
-            <p className="font-semibold">
-              ${apartmentData.newBalance.toFixed(2)}
-            </p>
+            <p>${apartmentData.newBalance.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Gastos comunes</p>
-            <p className="font-semibold">
-              ${apartmentData.commonExpenses.toFixed(2)}
-            </p>
+            <p>${apartmentData.commonExpenses.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Fondo de reserva</p>
-            <p className="font-semibold">
-              ${apartmentData.reserveFund.toFixed(2)}
-            </p>
+            <p>${apartmentData.reserveFund.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Cuota obra 5/12</p>
-            <p className="font-semibold">
-              ${apartmentData.constructionFee.toFixed(2)}
-            </p>
+            <p>${apartmentData.constructionFee.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Total del mes</p>
-            <p className="font-semibold">
-              ${apartmentData.monthlyTotal.toFixed(2)}
-            </p>
+            <p>${apartmentData.monthlyTotal.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Recargo por mora</p>
-            <p className="font-semibold">${apartmentData.lateFee.toFixed(2)}</p>
+            <p>${apartmentData.lateFee.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Total a pagar</p>
-            <p className="font-semibold">
-              ${apartmentData.totalDue.toFixed(2)}
-            </p>
+            <p>${apartmentData.totalDue.toFixed(2)}</p>
           </div>
         </div>
       </div>

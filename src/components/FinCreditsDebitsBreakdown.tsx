@@ -62,9 +62,7 @@ export default function CreditsDebitsBreakdown() {
               <h3 className="text-lg font-semibold">{transaction.fund}</h3>
               <p className="text-neutral-500">{transaction.description}</p>
             </div>
-            <p className="text-2xl font-bold whitespace-nowrap">
-              {transaction.amount.toFixed(2)}
-            </p>
+            <p className="whitespace-nowrap">{transaction.amount.toFixed(2)}</p>
           </li>
         ))}
       </ul>
