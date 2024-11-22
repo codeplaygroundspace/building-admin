@@ -1,12 +1,12 @@
-import FundSummary from "@/components/FinFundSummary";
 import MainMenu from "@/components/MainMenu";
 import ApartmentFinancialBreakdown from "@/components/FinApartmentFinancialBreakdown";
+import FinTotal from "@/components/FinTotal";
 
 export default function Home() {
   return (
     <>
       <MainMenu />
-      <FundSummary />
+      <FinTotal />
       <ApartmentFinancialBreakdown />
     </>
   );

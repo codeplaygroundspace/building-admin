@@ -45,27 +45,59 @@ export default function CreditsDebitsBreakdown() {
     0
   );
 
+  const fundSummary = [
+    {
+      category: "Fondo de reserva",
+      items: [
+        { label: "Saldo anterior", amount: 338491.83 },
+        { label: "Cobranza", amount: 27642.99 },
+        { label: "Gastos", amount: 283579.0 },
+        { label: "Créditos", amount: 0.0 },
+        { label: "Débitos", amount: 0.0 },
+      ],
+    },
+  ];
   return (
-    <CardWrapper title="Detalle de créditos y débitos">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Total</h2>
-        <p className="text-2xl font-bold">
-          <span className="text-sm">$</span>
-          {totalAmount.toFixed(2)}
-        </p>
-      </div>
-      <Separator className="my-4" />
-      <ul className="space-y-4">
-        {transactions.map((transaction, index) => (
-          <li key={index} className="flex justify-between items-start">
-            <div className="flex-1 pr-4">
-              <h3 className="text-lg font-semibold">{transaction.fund}</h3>
-              <p className="text-neutral-500">{transaction.description}</p>
-            </div>
-            <p className="whitespace-nowrap">{transaction.amount.toFixed(2)}</p>
-          </li>
+    <>
+      <CardWrapper title="Detalle de créditos y débitos">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Total</h2>
+          <p className="">
+            <span className="text-sm">$</span>
+            {totalAmount.toFixed(2)}
+          </p>
+        </div>
+        <Separator className="my-4" />
+        <ul className="space-y-4">
+          {transactions.map((transaction, index) => (
+            <li key={index} className="flex justify-between items-start">
+              <div className="flex-1 pr-4">
+                <h3 className="text-lg font-semibold">{transaction.fund}</h3>
+                <p className="text-neutral-500">{transaction.description}</p>
+              </div>
+              <p className="whitespace-nowrap">
+                {transaction.amount.toFixed(2)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </CardWrapper>
+
+      <CardWrapper title="Resumen fondo de reserva">
+        {fundSummary.map((fund, index) => (
+          <div key={index} className="mb-6">
+            {fund.items.map((item, idx) => (
+              <div key={idx} className="flex justify-between">
+                <p className="text-lg">{item.label}</p>
+                <p>
+                  <span className="text-sm">$</span>
+                  {item.amount.toFixed(2)}
+                </p>
+              </div>
+            ))}
+          </div>
         ))}
-      </ul>
-    </CardWrapper>
+      </CardWrapper>
+    </>
   );
 }

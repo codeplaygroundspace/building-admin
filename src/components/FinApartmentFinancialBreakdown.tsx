@@ -1,64 +1,74 @@
+"use client";
+
 import CardWrapper from "./ui-custom/CardWrapper";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Define a type for the apartment data
+interface ApartmentData {
+  aptNumber: string;
+  previousBalance: number;
+  payments: number;
+  newBalance: number;
+  commonExpenses: number;
+  reserveFund: number;
+  constructionFee: number;
+  monthlyTotal: number;
+  lateFee: number;
+  totalDue: number;
+}
 
 export default function ApartmentFinancialBreakdown() {
-  const apartmentData = {
-    aptNumber: "001P",
-    previousBalance: -53938,
-    payments: 0,
-    newBalance: -53938,
-    commonExpenses: 0,
-    reserveFund: 415,
-    constructionFee: 7616,
-    monthlyTotal: 8031,
-    lateFee: 0,
-    totalDue: -45907,
-  };
+  const apartmentData: ApartmentData[] = [
+    {
+      aptNumber: "001P",
+      previousBalance: -53938,
+      payments: 0,
+      newBalance: -53938,
+      commonExpenses: 0,
+      reserveFund: 415,
+      constructionFee: 7616,
+      monthlyTotal: 8031,
+      lateFee: 0,
+      totalDue: -45907,
+    },
+  ];
 
   return (
-    <CardWrapper title="Detalle financiero">
-      <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
-        <h2 className="text-xl font-semibold mb-4">
-          Apto N° {apartmentData.aptNumber} - Propietario
-        </h2>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <p>Saldo anterior</p>
-            <p>${apartmentData.previousBalance.toFixed(2)}</p>
+    <>
+      <CardWrapper title="Detalle de pagos">
+        <Tabs defaultValue="propietario" className="w-full">
+          <div className="flex items-center mb-4">
+            <span className="text-sm font-medium text-muted-foreground mr-2">
+              {apartmentData[0].aptNumber}
+            </span>
+            <TabsList>
+              <TabsTrigger value="propietario">Propietario</TabsTrigger>
+              <TabsTrigger value="inquilino">Inquilino</TabsTrigger>
+            </TabsList>
           </div>
-          <div className="flex justify-between">
-            <p>Pagos</p>
-            <p>${apartmentData.payments.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Nuevo saldo</p>
-            <p>${apartmentData.newBalance.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Gastos comunes</p>
-            <p>${apartmentData.commonExpenses.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Fondo de reserva</p>
-            <p>${apartmentData.reserveFund.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Cuota obra 5/12</p>
-            <p>${apartmentData.constructionFee.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Total del mes</p>
-            <p>${apartmentData.monthlyTotal.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Recargo por mora</p>
-            <p>${apartmentData.lateFee.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Total a pagar</p>
-            <p>${apartmentData.totalDue.toFixed(2)}</p>
-          </div>
-        </div>
-      </div>
-    </CardWrapper>
+          <TabsContent value="propietario">
+            <div className="space-y-4">
+              {Object.entries(apartmentData[0]).map(
+                ([key, value], index) =>
+                  key !== "aptNumber" && (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm font-medium">{key}</span>
+                      <span className="text-sm">${value.toFixed(2)}</span>
+                    </div>
+                  )
+              )}
+            </div>
+          </TabsContent>
+          <TabsContent value="inquilino">
+            <div className="text-center text-sm text-muted-foreground py-4">
+              No hay información disponible
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardWrapper>
+    </>
   );
 }
