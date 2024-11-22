@@ -48,35 +48,68 @@ export default function ExpenseBreakdown() {
     0
   );
 
+  const expensesSummary = [
+    {
+      category: "Gastos comunes",
+      items: [
+        { label: "Saldo anterior", amount: 59138.77 },
+        { label: "Cobranza", amount: 8691.01 },
+        { label: "Gastos", amount: 27376.74 },
+        { label: "Créditos", amount: 0.0 },
+        { label: "Débitos", amount: 10549.4 },
+      ],
+    },
+  ];
+
   return (
-    <CardWrapper title="Detalle de gastos ↗️">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Total</h2>
-        <p>
-          -$
-          {totalExpenses.toFixed(2)}
-        </p>
-      </div>
-      <Separator className="my-4" />
-      {loading ? (
-        <p>Cargando datos...</p>
-      ) : expenses.length === 0 ? (
-        <p>No expenses found.</p>
-      ) : (
-        <ul className="space-y-4">
-          {expenses.map((expense, index) => (
-            <li key={index} className="flex justify-between items-start">
-              <div className="flex-1 pr-4">
-                <h3 className="text-lg font-semibold">{expense.category}</h3>
-                <p className="text-neutral-500">{expense.description}</p>
-              </div>
-              <p className="whitespace-nowrap ">
-                -${expense.amount.toFixed(2)}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </CardWrapper>
+    <>
+      <CardWrapper title="Detalle de gastos ↗️">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Total</h2>
+          <p>
+            -$
+            {totalExpenses.toFixed(2)}
+          </p>
+        </div>
+        <Separator className="my-4" />
+        {loading ? (
+          <p>Cargando datos...</p>
+        ) : expenses.length === 0 ? (
+          <p>No expenses found.</p>
+        ) : (
+          <ul className="space-y-4">
+            {expenses.map((expense, index) => (
+              <li key={index} className="flex justify-between items-start">
+                <div className="flex-1 pr-4">
+                  <h3 className="text-lg font-semibold">{expense.category}</h3>
+                  <p className="text-neutral-500">{expense.description}</p>
+                </div>
+                <p className="whitespace-nowrap ">
+                  -${expense.amount.toFixed(2)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardWrapper>
+      <CardWrapper title="Resumen">
+        {expensesSummary.map((fund, index) => (
+          <div key={index} className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">{fund.category}</h2>
+            <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
+              {fund.items.map((item, idx) => (
+                <div key={idx} className="flex justify-between">
+                  <p className="text-lg">{item.label}</p>
+                  <p>
+                    <span className="text-sm">$</span>
+                    {item.amount.toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </CardWrapper>
+    </>
   );
 }

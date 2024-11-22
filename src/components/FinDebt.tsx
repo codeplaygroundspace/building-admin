@@ -10,7 +10,7 @@ export default function InfoDebt() {
   const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
 
   return (
-    <CardWrapper title="Listado de deudores">
+    <CardWrapper title="Listado de deudores 🔴">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
         <p className=" text-red-500">

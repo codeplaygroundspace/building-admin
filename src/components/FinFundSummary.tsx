@@ -1,18 +1,7 @@
 import CardWrapper from "./ui-custom/CardWrapper";
-import { Separator } from "@/components/ui/separator";
 
 export default function FundSummary() {
   const fundSummary = [
-    {
-      category: "Gastos comunes",
-      items: [
-        { label: "Saldo anterior", amount: 59138.77 },
-        { label: "Cobranza", amount: 8691.01 },
-        { label: "Gastos", amount: 27376.74 },
-        { label: "Créditos", amount: 0.0 },
-        { label: "Débitos", amount: 10549.4 },
-      ],
-    },
     {
       category: "Fondo de reserva",
       items: [
@@ -24,12 +13,6 @@ export default function FundSummary() {
       ],
     },
   ];
-
-  const totals = {
-    gastosComunes: 112459.46,
-    cajaReserva: 82555.82,
-    overall: 112459.46 + 82555.82,
-  };
 
   return (
     <CardWrapper title="Resumen">
@@ -49,26 +32,6 @@ export default function FundSummary() {
           </div>
         </div>
       ))}
-
-      <Separator className="my-6" />
-
-      {/* Totals */}
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total Gastos comunes</h3>
-          <p className="text-lg font-bold">
-            ${totals.gastosComunes.toFixed(2)}
-          </p>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total Fondo de reserva</h3>
-          <p className="text-lg font-bold">${totals.cajaReserva.toFixed(2)}</p>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-lg font-semibold">Total general</h3>
-          <p className="text-lg font-bold">${totals.overall.toFixed(2)}</p>
-        </div>
-      </div>
     </CardWrapper>
   );
 }
