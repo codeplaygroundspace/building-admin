@@ -1,5 +1,6 @@
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 export default function InfoDebt() {
   const debts = [
@@ -13,10 +14,7 @@ export default function InfoDebt() {
     <CardWrapper title="Listado de deudores 🔴">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Total</h2>
-        <p className=" text-red-500">
-          <span className="text-sm">$</span>
-          {totalDebt.toFixed(2)}
-        </p>
+        <p className=" text-red-500">{formatCurrency(totalDebt)}</p>
       </div>
       <Separator className="my-4" />
       <ul className="space-y-4">

@@ -1,32 +1,29 @@
+"use client";
 import CardWrapper from "./ui-custom/CardWrapper";
 import { formatCurrency } from "../../utils/formatCurrency";
 
-export default function FundSummary() {
-  const fundSummary = [
+export default function ExpenseSummary() {
+  const expensesSummary = [
     {
-      category: "Fondo de reserva",
+      category: "Gastos comunes",
       items: [
-        { label: "Saldo anterior", amount: 338491.83 },
-        { label: "Cobranza", amount: 27642.99 },
-        { label: "Gastos", amount: 283579.0 },
+        { label: "Saldo anterior", amount: 59138.77 },
+        { label: "Cobranza", amount: 8691.01 },
+        { label: "Gastos", amount: 27376.74 },
         { label: "Créditos", amount: 0.0 },
-        { label: "Débitos", amount: 0.0 },
+        { label: "Débitos", amount: 10549.4 },
       ],
     },
   ];
-
   return (
-    <CardWrapper title="Resumen de Fondo">
-      {fundSummary.map((fund, index) => (
+    <CardWrapper title="Resumen de gastos">
+      {expensesSummary.map((fund, index) => (
         <div key={index} className="mb-6">
           <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
             {fund.items.map((item, idx) => (
               <div key={idx} className="flex justify-between">
                 <p className="text-lg">{item.label}</p>
-                <p>
-                  <span className="text-sm">$</span>
-                  {formatCurrency(item.amount)}
-                </p>
+                <p>{formatCurrency(item.amount)}</p>
               </div>
             ))}
           </div>
