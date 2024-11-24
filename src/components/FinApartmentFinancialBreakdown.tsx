@@ -1,35 +1,36 @@
 "use client";
 
 import CardWrapper from "./ui-custom/CardWrapper";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define a type for the apartment data
 interface ApartmentData {
-  aptNumber: string;
-  previousBalance: number;
-  payments: number;
-  newBalance: number;
-  commonExpenses: number;
-  reserveFund: number;
-  constructionFee: number;
-  monthlyTotal: number;
-  lateFee: number;
-  totalDue: number;
+  "NRO. APTO.": string;
+  "SALDO ANTERIOR": number;
+  PAGOS: number;
+  "NUEVO SALDO": number;
+  "GASTOS COMUNES": number;
+  "FONDO DE RESERVA": number;
+  "CUOTA OBRA": number;
+  "5/12 DEL MES": number;
+  "POR MORA": number;
+  "TOTAL A PAGAR": number;
 }
 
 export default function ApartmentFinancialBreakdown() {
   const apartmentData: ApartmentData[] = [
     {
-      aptNumber: "001P",
-      previousBalance: -53938,
-      payments: 0,
-      newBalance: -53938,
-      commonExpenses: 0,
-      reserveFund: 415,
-      constructionFee: 7616,
-      monthlyTotal: 8031,
-      lateFee: 0,
-      totalDue: -45907,
+      "NRO. APTO.": "001P",
+      "SALDO ANTERIOR": -53938,
+      PAGOS: 0,
+      "NUEVO SALDO": -53938,
+      "GASTOS COMUNES": 0,
+      "FONDO DE RESERVA": 415,
+      "CUOTA OBRA": 7616,
+      "5/12 DEL MES": 8031,
+      "POR MORA": 0,
+      "TOTAL A PAGAR": -45907,
     },
   ];
 
@@ -39,7 +40,7 @@ export default function ApartmentFinancialBreakdown() {
         <Tabs defaultValue="propietario" className="w-full">
           <div className="flex items-center mb-4">
             <span className="text-sm font-medium text-muted-foreground mr-2">
-              {apartmentData[0].aptNumber}
+              {apartmentData[0]["NRO. APTO."]}
             </span>
             <TabsList>
               <TabsTrigger value="propietario">Propietario</TabsTrigger>
@@ -56,7 +57,7 @@ export default function ApartmentFinancialBreakdown() {
                       className="flex justify-between items-center"
                     >
                       <span className="text-sm font-medium">{key}</span>
-                      <span className="text-sm">${value.toFixed(2)}</span>
+                      <span className="text-sm">{formatCurrency(value)}</span>
                     </div>
                   )
               )}

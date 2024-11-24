@@ -1,8 +1,9 @@
+import { formatCurrency } from "../../utils/formatCurrency";
+
 export default function FinTotal() {
   const totals = {
     gastosComunes: 112459.46,
     cajaReserva: 82555.82,
-    overall: 112459.46 + 82555.82,
   };
 
   return (
@@ -10,7 +11,7 @@ export default function FinTotal() {
       <div className=" flex justify-between bg-gradient-to-r from-gray-900 to-gray-700 p-6 rounded-lg">
         <h3 className="text-2xl font-semibold text-white">Total</h3>
         <p className="text-2xl font-bold text-white">
-          ${totals.overall.toFixed(2)}
+          {formatCurrency(totals.gastosComunes + totals.cajaReserva)}
         </p>
       </div>
 
