@@ -1,6 +1,6 @@
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { formatCurrency } from "../utils/formatCurrency";
 
 export default function InfoDebt() {
   const debts = [

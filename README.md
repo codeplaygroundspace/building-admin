@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
-First, run the development server:
+- Problem: Compatibiliy issues with React 19 and supabase
+- Solution: Downgrade to React 18
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Problem: It's annoying to wait a second every time I navigate to a new page
+- Solution: Need to fetch data in higher-order component (HOC) such as layout.js and use Next.js 15's built-in caching capabilities so the data only loads once.
+- A context in React is a mechanism that allows you to share data across the component tree without having to pass props manually at every level. It is especially useful for managing "global" data that many components in your application need access to, such as authentication state, themes, or, in your case, shared fetched data.
+- Tutorial: https://www.youtube.com/watch?v=HYKDUF8X3qI
+- Limitations: When the value of a Context.Provider changes, all components consuming that context will re-render, even if some components don’t rely on the updated data. This can lead to unnecessary re-renders and affect performance.
+- Final decision: go without React context API. Fetch the data and pass it down as a prop to its children.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Problem: I have added my async function to layout.tsx, however there is an error. Prevent client components from being async functions. See: https://nextjs.org/docs/messages/no-async-client-component. The error occurs because client components in Next.js cannot be asynchronous functions. The layout.tsx is by default a server component, and it should handle async operations (like fetch) correctly. However, when server-side data fetching is needed in the layout, the async function should not directly apply to the layout component.
+- Solution: utlis/dataFetcher file created to remove code from layout.tsx.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database design
+- expenses table
+- expenses_categories table -> connected to expenses
+- buildings table -> connected to expenses
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech stack
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Nextjs with TypeScript
+- Deploy in Vercel
+- Database in Supabase
+- Shadcn and Tailwind for styling

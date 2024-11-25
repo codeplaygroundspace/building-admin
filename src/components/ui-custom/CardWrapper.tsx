@@ -1,11 +1,5 @@
 import { ReactNode } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 interface CardWrapperProps {
   title: ReactNode;
@@ -17,15 +11,12 @@ interface CardWrapperProps {
 export default function CardWrapper({
   title,
   footer,
-  className = "",
   children,
 }: CardWrapperProps) {
   return (
     <section>
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
+      <h2 className="text-lg font-semibold pb-2">{title}</h2>
+      <Card className="pt-4">
         <CardContent>{children}</CardContent>
         {footer && <CardFooter>{footer}</CardFooter>}
       </Card>

@@ -1,5 +1,5 @@
 import CardWrapper from "./ui-custom/CardWrapper";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { formatCurrency } from "../utils/formatCurrency";
 
 export default function FundSummary() {
   const fundSummary = [
