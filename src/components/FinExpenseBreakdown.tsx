@@ -1,50 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../../utils/formatCurrency";
-import { supabase } from "../supabase/supabaseClient";
+import { formatCurrency } from "../utils/formatCurrency";
 
 // Define the type for Expense
 interface Expense {
+  id: number;
   category: string;
   description: string;
   amount: number;
+  created_at: string;
 }
 
-export default function ExpenseBreakdown() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    async function fetchExpenses() {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("expenses")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) throw new Error(error.message);
-
-        console.log("Fetched data from Supabase:", data);
-        console.log("Supabase error:", error);
-
-        setExpenses(data || []);
-      } catch (err: unknown) {
-        console.log(
-          "😵‍💫 Error fetching expenses:",
-          err instanceof Error ? err.message : "Unknown error"
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchExpenses();
-  }, []);
-
+export default function ExpenseBreakdown({ data = [] }: { data: Expense[] }) {
   // Calculate total expenses
-  const totalExpenses: number = expenses.reduce(
+  const totalExpenses: number = data.reduce(
     (sum, expense) => sum + (expense.amount || 0),
     0
   );
@@ -56,13 +26,11 @@ export default function ExpenseBreakdown() {
         <p>{formatCurrency(totalExpenses)}</p>
       </div>
       <Separator className="my-4" />
-      {loading ? (
-        <p>Cargando datos...</p>
-      ) : expenses.length === 0 ? (
+      {data.length === 0 ? (
         <p>No se encontraron gastos comunes.</p>
       ) : (
         <ul className="space-y-4">
-          {expenses.map((expense, index) => (
+          {data.map((expense, index) => (
             <li key={index} className="flex justify-between items-start">
               <div className="flex-1 pr-4">
                 <h3 className="text-lg font-semibold">{expense.category}</h3>

@@ -1,7 +1,9 @@
+import React from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/Header";
+import { fetchData, DashboardData } from "../utils/dataFetcher";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -19,19 +21,31 @@ export const metadata: Metadata = {
   description: "A place to track admin in and out expenses",
 };
 
-export default function RootLayout({
+async function RootLayoutWrapper({ children }: { children: React.ReactNode }) {
+  const data = await fetchData(); // Fetch data from multiple tables
+  return <RootLayout data={data}>{children}</RootLayout>;
+}
+
+// Main Layout Component
+function RootLayout({
   children,
-}: Readonly<{
+  data,
+}: {
   children: React.ReactNode;
-}>) {
+  data: DashboardData;
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased space-y-6 bg-neutral-100`}
       >
         <Header />
-        <main className="space-y-8 pb-24 px-4">{children}</main>
+        <main className="space-y-8 pb-24 px-4">
+          {React.cloneElement(children as React.ReactElement, { data })}
+        </main>
       </body>
     </html>
   );
 }
+
+export default RootLayoutWrapper;

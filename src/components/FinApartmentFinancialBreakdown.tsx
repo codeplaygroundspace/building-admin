@@ -1,7 +1,7 @@
 "use client";
 
 import CardWrapper from "./ui-custom/CardWrapper";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { formatCurrency } from "../utils/formatCurrency";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define a type for the apartment data
