@@ -2,22 +2,20 @@
 import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "../utils/formatCurrency";
+import { DashboardData } from "@/hooks/useDataFetcher";
 
-// Define the type for Expense
-interface Expense {
-  id: number;
-  category: string;
-  description: string;
-  amount: number;
-  created_at: string;
+interface ExpenseBreakdownProps {
+  expenses: DashboardData;
+  totalExpenses: number;
 }
-
-export default function ExpenseBreakdown({ data = [] }: { data: Expense[] }) {
-  // Calculate total expenses
-  const totalExpenses: number = data.reduce(
-    (sum, expense) => sum + (expense.amount || 0),
-    0
-  );
+export default function ExpenseBreakdown({
+  expenses,
+  totalExpenses,
+}: ExpenseBreakdownProps) {
+  // Check if data is defined
+  if (!expenses || !expenses.expenses) {
+    return <p>No data available.</p>; // Handle the case where data is undefined
+  }
 
   return (
     <CardWrapper title="Detalle de gastos ↗️">
@@ -26,19 +24,17 @@ export default function ExpenseBreakdown({ data = [] }: { data: Expense[] }) {
         <p>{formatCurrency(totalExpenses)}</p>
       </div>
       <Separator className="my-4" />
-      {data.length === 0 ? (
+      {expenses.expenses.length === 0 ? (
         <p>No se encontraron gastos comunes.</p>
       ) : (
         <ul className="space-y-4">
-          {data.map((expense, index) => (
-            <li key={index} className="flex justify-between items-start">
+          {expenses.expenses.map((el, i) => (
+            <li key={i} className="flex justify-between items-start">
               <div className="flex-1 pr-4">
-                <h3 className="text-lg font-semibold">{expense.category}</h3>
-                <p className="text-neutral-500">{expense.description}</p>
+                <h3 className="text-lg font-semibold">{el.category}</h3>
+                <p className="text-neutral-500">{el.description}</p>
               </div>
-              <p className="whitespace-nowrap ">
-                {formatCurrency(expense.amount)}
-              </p>
+              <p className="whitespace-nowrap ">{formatCurrency(el.amount)}</p>
             </li>
           ))}
         </ul>
