@@ -3,9 +3,10 @@ import { supabase } from "../supabase/supabaseClient";
 // Declares a TypeScript interface to represent the structure of an expense object as stored in the expense table.
 interface Expense {
   id: number;
-  category: string;
+  category_name: string;
   description: string;
   amount: number;
+  colour: string;
   created_at: string | null;
 }
 
