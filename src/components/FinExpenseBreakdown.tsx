@@ -3,6 +3,7 @@ import CardWrapper from "./ui-custom/CardWrapper";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "../utils/formatCurrency";
 import { DashboardData } from "@/hooks/useDataFetcher";
+import ExpenseListItem from "./ExpenseListItem";
 
 interface ExpenseBreakdownProps {
   expenses: DashboardData;
@@ -29,20 +30,13 @@ export default function ExpenseBreakdown({
       ) : (
         <ul className="space-y-4">
           {expenses.expenses.map((el, i) => (
-            <li key={i} className="flex justify-between items-start">
-              <div className="flex-1 pr-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full`}
-                    style={{ backgroundColor: el.colour || "black" }}
-                    aria-hidden="true"
-                  />
-                  <h3 className="text-lg font-semibold">{el.category_name}</h3>
-                </div>
-                <p className="text-neutral-500">{el.description}</p>
-              </div>
-              <p className="whitespace-nowrap ">{formatCurrency(el.amount)}</p>
-            </li>
+            <ExpenseListItem
+              key={i}
+              category_name={el.category_name}
+              description={el.description}
+              amount={el.amount}
+              colour={el.colour}
+            />
           ))}
         </ul>
       )}
