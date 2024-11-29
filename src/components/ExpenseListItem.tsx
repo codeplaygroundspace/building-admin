@@ -17,7 +17,7 @@ export default function ExpenseListItem({
     <li className="flex justify-between items-start">
       <div className="flex items-start gap-2 pr-4">
         <div
-          className="size-12 aspect-square rounded-lg border-2 border-gray-300 flex items-center justify-center bg-gray-100"
+          className="size-8 aspect-square rounded-lg border-2 border-gray-300 flex items-center justify-center bg-gray-100"
           style={{ backgroundColor: colour || "black" }}
           aria-hidden="true"
         >
