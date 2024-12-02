@@ -1,7 +1,7 @@
 // By using TypeScript, you can ensure you don't accidentally pass the wrong data format to your components or database, like passing a string instead of a number to invoice amount. This can help catch bugs early in the development process.
 
 // Declares a TypeScript interface to represent the structure of an expense object as stored in the expense table.
-interface Expense {
+export interface Expense {
   id: number;
   category_name: string;
   description: string;
