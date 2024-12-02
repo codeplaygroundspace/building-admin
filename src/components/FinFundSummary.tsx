@@ -18,15 +18,12 @@ export default function FundSummary() {
   return (
     <CardWrapper title="Resumen de Fondo">
       {fundSummary.map((fund, index) => (
-        <div key={index} className="mb-6">
-          <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
+        <div key={index}>
+          <div className="space-y-4">
             {fund.items.map((item, idx) => (
               <div key={idx} className="flex justify-between">
                 <p className="text-lg">{item.label}</p>
-                <p>
-                  <span className="text-sm">$</span>
-                  {formatCurrency(item.amount)}
-                </p>
+                <p>{formatCurrency(item.amount)}</p>
               </div>
             ))}
           </div>

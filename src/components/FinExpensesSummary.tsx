@@ -22,8 +22,8 @@ export default function ExpenseSummary({ totalExpenses }: ExpenseSummaryProps) {
   return (
     <CardWrapper title="Resumen de gastos">
       {expensesSummary.map((fund, index) => (
-        <div key={index} className="mb-6">
-          <div className="bg-gray-100 p-4 rounded-lg shadow-sm space-y-2">
+        <div key={index}>
+          <div className="space-y-4">
             {fund.items.map((item, i) => (
               <div key={i} className="flex justify-between">
                 <p className="text-lg">{item.label}</p>
