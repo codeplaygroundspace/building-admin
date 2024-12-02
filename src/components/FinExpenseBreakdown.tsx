@@ -1,8 +1,8 @@
 "use client";
-import CardWrapper from "./ui-custom/CardWrapper";
+import CardWrapper from "./CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../utils/formatCurrency";
-import { DashboardData } from "@/hooks/useDataFetcher";
+import { formatCurrency } from "../lib/formatCurrency";
+import { DashboardData } from "@/lib/hooks/useDataFetcher";
 import ExpenseListItem from "./ExpenseListItem";
 
 interface ExpenseBreakdownProps {

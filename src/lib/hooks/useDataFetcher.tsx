@@ -1,19 +1,5 @@
-import { supabase } from "../supabase/supabaseClient";
-
-// Declares a TypeScript interface to represent the structure of an expense object as stored in the expense table.
-interface Expense {
-  id: number;
-  category_name: string;
-  description: string;
-  amount: number;
-  colour: string;
-  created_at: string | null;
-}
-
-// Define the combined data type, an array of Expense objects. expenses: [{},{}]
-export interface DashboardData {
-  expenses: Expense[];
-}
+import { supabase } from "../../supabase/supabaseClient";
+import { DashboardData } from "../definitions";
 
 /**
  * Fetches expense data from Supabase

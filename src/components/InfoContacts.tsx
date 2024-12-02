@@ -1,4 +1,4 @@
-import CardWrapper from "./ui-custom/CardWrapper";
+import CardWrapper from "./CardWrapper";
 import { Mail, Phone, User } from "lucide-react"; // Replace with appropriate Shadcn icons if different
 
 export default function ContactInfo() {

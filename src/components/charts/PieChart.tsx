@@ -1,9 +1,9 @@
 "use client";
 
 import { Pie, PieChart } from "recharts";
-import CardWrapper from "../ui-custom/CardWrapper";
-import { formatCurrency } from "../../utils/formatCurrency";
-import { DashboardData } from "@/hooks/useDataFetcher";
+import CardWrapper from "../CardWrapper";
+import { formatCurrency } from "../../lib/formatCurrency";
+import { DashboardData } from "@/lib/hooks/useDataFetcher";
 
 import {
   ChartConfig,
