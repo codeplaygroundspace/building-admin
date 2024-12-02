@@ -1,14 +1,14 @@
 import { formatCurrency } from "../lib/formatCurrency";
 
 interface ExpenseListItemProps {
-  category_name: string;
+  category_name?: string;
   description: string;
   amount: number;
   colour: string;
 }
 
 export default function ExpenseListItem({
-  category_name,
+  category_name = "Desconocida",
   description,
   amount,
   colour,

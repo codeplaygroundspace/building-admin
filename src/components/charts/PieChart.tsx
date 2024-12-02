@@ -3,7 +3,7 @@
 import { Pie, PieChart } from "recharts";
 import CardWrapper from "../CardWrapper";
 import { formatCurrency } from "../../lib/formatCurrency";
-import { DashboardData } from "@/lib/hooks/useDataFetcher";
+import { DashboardData } from "../../lib/definitions";
 
 import {
   ChartConfig,
