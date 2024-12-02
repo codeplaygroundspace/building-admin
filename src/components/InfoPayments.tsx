@@ -1,4 +1,4 @@
-import CardWrapper from "./ui-custom/CardWrapper";
+import CardWrapper from "./CardWrapper";
 import { Banknote, Calendar } from "lucide-react"; // Replace with appropriate Shadcn icons if different
 
 export default function PaymentsInfo() {

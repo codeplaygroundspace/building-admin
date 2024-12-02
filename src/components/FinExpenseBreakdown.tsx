@@ -1,8 +1,8 @@
 "use client";
-import CardWrapper from "./ui-custom/CardWrapper";
+import CardWrapper from "./CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../utils/formatCurrency";
-import { DashboardData } from "@/hooks/useDataFetcher";
+import { formatCurrency } from "../lib/formatCurrency";
+import { DashboardData } from "../lib/definitions";
 import ExpenseListItem from "./ExpenseListItem";
 
 interface ExpenseBreakdownProps {
@@ -29,9 +29,9 @@ export default function ExpenseBreakdown({
         <p>No se encontraron gastos comunes.</p>
       ) : (
         <ul className="space-y-4">
-          {expenses.expenses.map((el, i) => (
+          {expenses.expenses.map((el, index) => (
             <ExpenseListItem
-              key={i}
+              key={index}
               category_name={el.category_name}
               description={el.description}
               amount={el.amount}

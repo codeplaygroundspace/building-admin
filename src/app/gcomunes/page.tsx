@@ -1,13 +1,10 @@
 import MainMenu from "@/components/MainMenu";
 import ExpenseBreakdown from "@/components/FinExpenseBreakdown";
 import ExpenseSummary from "@/components/FinExpensesSummary";
-import { DashboardData, fetchData } from "../../hooks/useDataFetcher";
+import { fetchData } from "../../lib/hooks/useDataFetcher";
+import { DashboardData } from "../../lib/definitions";
 import PieChartComponent from "@/components/charts/PieChart";
 // Data flows: Supabase → useDataFetcher → gc/page.tsx
-
-// interface ExpensesPageProps {
-//   expenses: DashboardData;
-// }
 
 export default async function ExpensesPage() {
   try {
