@@ -21,6 +21,7 @@ export default function MainMenu() {
         {navLinks.map((item) => {
           const isActive = pathname === item.href;
           const textColor = isActive ? "text-black" : "text-gray-500";
+          const fontWeight = isActive ? "font-semibold" : "font-normal";
           return (
             <li key={item.name} className="flex-1">
               <Link
@@ -29,11 +30,7 @@ export default function MainMenu() {
                 className="flex flex-col items-center justify-center h-full"
               >
                 <item.icon className={clsx("w-6 h-6", textColor)} />
-                <span
-                  className={clsx("mt-1 text-xs", textColor, {
-                    "font-bold": isActive,
-                  })}
-                >
+                <span className={clsx("mt-1 text-xs", textColor, fontWeight)}>
                   {item.name}
                 </span>
               </Link>
