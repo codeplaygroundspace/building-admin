@@ -2,7 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "../components/Header";
+import Header from "@/components/Header";
+import MainMenu from "@/components/MainMenu";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased space-y-6 bg-neutral-100`}
       >
+        <MainMenu />
         <Header />
         <main className="space-y-8 pb-24 px-4">{children}</main>
       </body>

@@ -1,41 +1,63 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import dayjs from "dayjs";
+import { DashboardData, Expense } from "../lib/definitions"; // Importing the interfaces from definitions.ts
 
-export default function Header() {
-  // Generate the formatted month string for a given date
-  const formatMonth = (date: Date): string => {
-    return new Intl.DateTimeFormat("es-ES", {
-      month: "short",
-      year: "numeric",
-    })
-      .format(date)
-      .replace(/^\w/, (c) => c.toLocaleUpperCase());
-  };
+export default function Header({
+  onMonthChange,
+}: {
+  onMonthChange?: (month: string) => void;
+}) {
+  const [months, setMonths] = useState<string[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Get the current month using the formatMonth function
-  const getCurrentMonth = () => formatMonth(new Date());
+  // Fetch the available months from the API
+  useEffect(() => {
+    const fetchMonths = async () => {
+      try {
+        const response = await fetch("/api/expenses");
+        if (!response.ok) {
+          throw new Error("Error fetching months");
+        }
+        const data: DashboardData = await response.json();
 
-  // Generate an array of the previous 12 months
-  const getPreviousMonths = () => {
-    const months: string[] = [];
-    const currentDate = new Date();
+        // Extract unique months from the expenses data
+        const uniqueMonths = Array.from(
+          new Set(
+            data.expenses
+              .filter((expense) => expense.created_at !== null)
+              .map((expense: Expense) =>
+                dayjs(expense.created_at as string).format("MMMM YYYY")
+              )
+          )
+        ).sort((a, b) =>
+          dayjs(a, "MMMM YYYY").isAfter(dayjs(b, "MMMM YYYY")) ? 1 : -1
+        );
 
-    months.push(getCurrentMonth());
+        if (uniqueMonths.length > 0) {
+          setMonths(uniqueMonths);
+          // Set the latest month as the default selected month
+          setSelectedMonth(uniqueMonths[uniqueMonths.length - 1]);
+        } else {
+          console.warn("No months data found"); // Warn if no months data
+        }
+      } catch (error) {
+        console.error("Error fetching months:", error);
+      }
+    };
 
-    for (let i = 1; i < 13; i++) {
-      const date = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() - i,
-        1
-      );
-      months.push(formatMonth(date));
+    fetchMonths();
+  }, []);
+
+  useEffect(() => {
+    // Only call onMonthChange if this is not the initial setting of selectedMonth
+    if (onMonthChange && selectedMonth && months.length > 0) {
+      onMonthChange(selectedMonth);
     }
-
-    return months;
-  };
-
-  const months = getPreviousMonths();
+  }, [selectedMonth, onMonthChange, months]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -45,8 +67,7 @@ export default function Header() {
     setSelectedMonth(month);
     setIsDropdownOpen(false);
   };
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   return (
     <header className="flex justify-between items-center p-4 shadow-md">
       <h1 className="text-lg font-bold">Ejido 123...</h1>
@@ -55,9 +76,10 @@ export default function Header() {
           onClick={toggleDropdown}
           className="bg-white border rounded-full px-4 py-2 shadow-sm flex items-center"
         >
-          {selectedMonth} <ChevronDown className="ml-2 h-4 w-4" />
+          {selectedMonth || "Cargando..."}{" "}
+          <ChevronDown className="ml-2 h-4 w-4" />
         </button>
-        {isDropdownOpen && (
+        {isDropdownOpen && months.length > 0 && (
           <ul className="absolute right-0 mt-1 bg-white border rounded-lg shadow-lg w-48 z-10">
             {months.map((month) => (
               <li
