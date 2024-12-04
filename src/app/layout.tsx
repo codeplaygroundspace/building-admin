@@ -1,9 +1,10 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { useState, ReactElement } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "@/components/Header";
 import MainMenu from "@/components/MainMenu";
+import HeaderWrapper from "@/components/HeaderWrapper";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,25 +17,29 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "Admin dashboard",
-  description: "A place to track admin in and out expenses",
-};
+interface RootLayoutProps {
+  children: ReactElement<{
+    selectedMonth: string | null;
+    setSelectedMonth: (month: string | null) => void;
+  }>;
+}
 
-// Main Layout Component
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: RootLayoutProps) {
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  console.log("RootLayout in layout: Selected Month:", selectedMonth);
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased space-y-6 bg-neutral-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased  bg-neutral-100`}
       >
         <MainMenu />
-        <Header />
-        <main className="space-y-8 pb-24 px-4">{children}</main>
+        <HeaderWrapper
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+        />
+        <main className="space-y-8 pb-24 px-4">
+          {React.cloneElement(children, { selectedMonth, setSelectedMonth })}
+        </main>
       </body>
     </html>
   );

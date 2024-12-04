@@ -3,7 +3,7 @@
 import { Pie, PieChart } from "recharts";
 import CardWrapper from "../CardWrapper";
 import { formatCurrency } from "../../lib/formatCurrency";
-import { DashboardData } from "../../lib/definitions";
+import { Expense } from "../../lib/definitions";
 
 import {
   ChartConfig,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/chart";
 
 interface ExpenseChartProps {
-  expenses: DashboardData;
+  expenses: Expense[]; // Updated to accept an array of Expense objects
 }
 
 const chartConfig = {
@@ -44,12 +44,12 @@ const chartConfig = {
 
 export default function PieChartComponent({ expenses }: ExpenseChartProps) {
   // Check if data is defined
-  if (!expenses || !expenses.expenses) {
+  if (!expenses || expenses.length === 0) {
     return <p>No hay información para mostrar la gráfica.</p>;
   }
 
   // Transform the expenses data into chart-friendly format
-  const chartData = expenses.expenses.map((expense) => ({
+  const chartData = expenses.map((expense) => ({
     amount: expense.amount,
     category: expense.category_name,
     formattedAmount: formatCurrency(expense.amount),
@@ -72,6 +72,11 @@ export default function PieChartComponent({ expenses }: ExpenseChartProps) {
             nameKey="category"
             dataKey="amount"
             innerRadius={60}
+            outerRadius={90}
+            paddingAngle={5}
+            label={({ category, amount }) =>
+              `${category}: ${formatCurrency(amount)}`
+            }
           />
         </PieChart>
       </ChartContainer>
