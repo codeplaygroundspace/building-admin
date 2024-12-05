@@ -1,54 +1,35 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { DashboardData, Expense } from "../../lib/definitions";
+import { fetchExpenses } from "../../lib/expensesService";
 import { calcTotalExpenses } from "../../lib/calcTotalExpenses";
+import { Expense, DashboardData } from "../../lib/definitions";
 
 export const useExpenses = (selectedMonth: string | null) => {
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null); // Handle errors gracefully
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/expenses");
-        if (!response.ok) {
-          throw new Error("Error fetching expenses");
-        }
-
-        const data: DashboardData = await response.json();
-        console.log("Fetched expenses in useExpenses hook 🔴:", data);
-
+        const data: DashboardData = await fetchExpenses();
         setAllExpenses(data.expenses);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error occurred";
-        setError(errorMessage);
-        console.error("Error fetching expenses:", errorMessage);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchExpenses();
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (selectedMonth) {
-      // Normalize selectedMonth for filtering
       const currentMonth = dayjs(selectedMonth, "MMMM YYYY").startOf("month");
       const previousMonth = currentMonth.subtract(1, "month");
-
-      console.log(
-        "Selected Month (Current):",
-        currentMonth.format("MMMM YYYY")
-      );
-      console.log(
-        "Selected Month (Previous):",
-        previousMonth.format("MMMM YYYY")
-      );
 
       const filtered = allExpenses.filter((expense) => {
         const expenseDate = dayjs(expense.created_at).startOf("month");
@@ -58,7 +39,6 @@ export const useExpenses = (selectedMonth: string | null) => {
         );
       });
 
-      console.log("Filtered Expenses 🟢:", filtered);
       setFilteredExpenses(filtered);
     } else {
       setFilteredExpenses([]);
