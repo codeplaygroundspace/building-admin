@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, ReactElement } from "react";
+import React, { useState, useEffect, ReactElement } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 import MainMenu from "@/components/MainMenu";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import { useBuildingAddress } from "@/lib/hooks/useBuildingAddress";
+import { useMonths } from "@/lib/hooks/useMonths"; // Import your hook for fetching months
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,7 +27,16 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const { months, error: monthsError } = useMonths(); // Fetch months using the hook
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Set selectedMonth to the latest month once months are fetched
+  useEffect(() => {
+    if (months.length > 0 && !selectedMonth) {
+      setSelectedMonth(months[months.length - 1]); // Default to the latest month
+    }
+  }, [months, selectedMonth]); // Include both dependencies
+
   console.log("RootLayout: Selected Month:", selectedMonth);
 
   // Define a valid building ID that exists in the expenses data
@@ -39,6 +49,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
   // Log hook results for debugging
   console.log("Building Address:", buildingAddress);
   console.log("Loadinggg:", loading, "Error:", error);
+
+  if (monthsError) {
+    return <div>Error loading months: {monthsError}</div>;
+  }
 
   return (
     <html lang="en">
