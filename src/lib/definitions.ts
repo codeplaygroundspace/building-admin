@@ -3,11 +3,12 @@
 // Declares a TypeScript interface to represent the structure of an expense object as stored in the expense table.
 export interface Expense {
   id: number;
+  created_at: string | null;
   category_name: string;
   description: string;
   amount: number;
   colour: string;
-  created_at: string | null;
+  building_address: string;
 }
 
 // Define the combined data type, an array of Expense objects. expenses: [{},{}]

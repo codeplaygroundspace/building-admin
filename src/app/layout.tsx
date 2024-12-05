@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import MainMenu from "@/components/MainMenu";
 import HeaderWrapper from "@/components/HeaderWrapper";
+import { useBuildingAddress } from "@/lib/hooks/useBuildingAddress";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,14 +27,27 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  console.log("RootLayout in layout: Selected Month:", selectedMonth);
+  console.log("RootLayout: Selected Month:", selectedMonth);
+
+  // Define a valid building ID that exists in the expenses data
+  const validBuildingId = "b5097257-046d-409d-ad44-c68efa4f1081";
+
+  // Fetch the building address using the custom hook
+  const { buildingAddress, loading, error } =
+    useBuildingAddress(validBuildingId);
+
+  // Log hook results for debugging
+  console.log("Building Address:", buildingAddress);
+  console.log("Loadinggg:", loading, "Error:", error);
+
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased  bg-neutral-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-100`}
       >
         <MainMenu />
         <HeaderWrapper
+          buildingId={validBuildingId} // Pass the valid building ID
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
         />
