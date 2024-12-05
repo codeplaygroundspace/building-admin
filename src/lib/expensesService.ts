@@ -1,4 +1,4 @@
-import { DashboardData } from "./types";
+import { DashboardData } from "./types/expense";
 
 let cachedExpenses: DashboardData | null = null;
 

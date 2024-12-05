@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
+import { useState } from "react";
 
 interface DropdownProps {
   items: string[];
@@ -15,7 +16,7 @@ export const Dropdown = ({
   onSelect,
   error,
 }: DropdownProps) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
