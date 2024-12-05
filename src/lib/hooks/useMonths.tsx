@@ -17,21 +17,25 @@ export const useMonths = () => {
 
         const data: DashboardData = await response.json();
 
-        console.log("Fetched data in useMonths file:", data);
+        console.log("Fetched data in useMonths hook file 🟢:", data);
 
+        // Extract unique ISO months
         const uniqueMonths = Array.from(
           new Set(
             data.expenses
               .filter((expense) => expense.created_at !== null)
               .map((expense: Expense) =>
-                dayjs(expense.created_at as string).format("MMMM YYYY")
+                dayjs(expense.created_at).startOf("month").toISOString()
               )
           )
-        ).sort((a, b) =>
-          dayjs(a, "MMMM YYYY").isAfter(dayjs(b, "MMMM YYYY")) ? 1 : -1
+        ).sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1));
+
+        // Map the unique ISO months to display-friendly format
+        const displayUniqueMonths = uniqueMonths.map((isoDate) =>
+          dayjs(isoDate).format("MMMM YYYY")
         );
 
-        setMonths(uniqueMonths);
+        setMonths(displayUniqueMonths);
       } catch (error) {
         setError("Failed to load months. Please try again later.");
         console.error(error);
