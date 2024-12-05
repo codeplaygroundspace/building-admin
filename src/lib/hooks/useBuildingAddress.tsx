@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchExpenses } from "../../lib/expensesService";
-import { Expense } from "../types";
+import { Expense } from "../types/expense";
 
 export const useBuildingAddress = (buildingId: string) => {
   const [buildingAddress, setBuildingAddress] = useState<string | null>(null);

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Expense } from "./types";
+import { Expense } from "./types/expense";
 
 //Outcome: ["August 2024", "October 2024", "November 2024"]
 

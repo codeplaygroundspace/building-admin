@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DashboardData } from "../types";
+import { DashboardData } from "../types/expense";
 import { fetchExpenses } from "../../lib/expensesService";
 import { getUniqueMonths } from "../uniqueMonthUtils";
 
