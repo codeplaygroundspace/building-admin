@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { DashboardData, Expense } from "../../lib/definitions";
-import dayjs from "dayjs";
+import { DashboardData } from "../types";
 import { fetchExpenses } from "../../lib/expensesService";
+import { getUniqueMonths } from "../uniqueMonthUtils";
 
-//The useMonths hook now only fetches and provides the months array. The responsibility for setting the default selectedMonth has been moved to the parent component (SelectMonth).
+//The useMonths custom hook is designed to fetch and process a list of unique months from the expenses data and make it available to components. The hook returns an array of strings representing the unique months and an error message if the fetch operation fails. The responsibility for setting the default selectedMonth has been moved to the parent component (SelectMonth).
 
 export const useMonths = () => {
   const [months, setMonths] = useState<string[]>([]);
@@ -14,21 +14,8 @@ export const useMonths = () => {
       try {
         const data: DashboardData = await fetchExpenses();
 
-        const uniqueMonths = Array.from(
-          new Set(
-            data.expenses
-              .filter((expense: Expense) => expense.created_at !== null)
-              .map((expense: Expense) =>
-                dayjs(expense.created_at).startOf("month").toISOString()
-              )
-          )
-        ).sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1));
-
-        const displayUniqueMonths = uniqueMonths.map((isoDate) =>
-          dayjs(isoDate).format("MMMM YYYY")
-        );
-
-        setMonths(displayUniqueMonths);
+        const uniqueMonths = getUniqueMonths(data.expenses);
+        setMonths(uniqueMonths);
       } catch (err) {
         setError("Failed to load months. Please try again later.");
         console.error(err);

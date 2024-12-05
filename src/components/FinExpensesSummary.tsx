@@ -1,6 +1,6 @@
 "use client";
 import CardWrapper from "./CardWrapper";
-import { formatCurrency } from "../lib/formatCurrency";
+import { formatCurrency } from "../lib/formatCurrencyUtils";
 
 interface ExpenseSummaryProps {
   totalExpenses: number;

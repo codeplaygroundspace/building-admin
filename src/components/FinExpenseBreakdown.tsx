@@ -2,8 +2,8 @@
 
 import CardWrapper from "./CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../lib/formatCurrency";
-import { Expense } from "../lib/definitions";
+import { formatCurrency } from "../lib/formatCurrencyUtils";
+import { Expense } from "../lib/types";
 import ExpenseListItem from "./ExpenseListItem";
 
 interface ExpenseBreakdownProps {
