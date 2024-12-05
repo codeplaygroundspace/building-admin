@@ -9,6 +9,7 @@ export interface Expense {
   amount: number;
   colour: string;
   building_address: string;
+  building_id: string;
 }
 
 // Define the combined data type, an array of Expense objects. expenses: [{},{}]
