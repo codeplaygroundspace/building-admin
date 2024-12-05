@@ -1,4 +1,4 @@
-import { Expense } from "../lib/definitions";
+import { Expense } from "./types";
 
 // Calculate total expenses
 export function calcTotalExpenses(expenses: { expenses: Expense[] }): number {

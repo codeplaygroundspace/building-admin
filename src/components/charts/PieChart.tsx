@@ -2,8 +2,8 @@
 
 import { Pie, PieChart } from "recharts";
 import CardWrapper from "../CardWrapper";
-import { formatCurrency } from "../../lib/formatCurrency";
-import { Expense } from "../../lib/definitions";
+import { formatCurrency } from "../../lib/formatCurrencyUtils";
+import { Expense } from "../../lib/types";
 
 import {
   ChartConfig,

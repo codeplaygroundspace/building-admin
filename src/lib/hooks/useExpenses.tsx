@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { fetchExpenses } from "../../lib/expensesService";
-import { calcTotalExpenses } from "../../lib/calcTotalExpenses";
-import { Expense, DashboardData } from "../../lib/definitions";
+import { calcTotalExpenses } from "../calcTotalExpensesUtils";
+import { Expense, DashboardData } from "../types";
 
 export const useExpenses = (selectedMonth: string | null) => {
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);

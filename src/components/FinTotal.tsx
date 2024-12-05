@@ -1,4 +1,4 @@
-import { formatCurrency } from "../lib/formatCurrency";
+import { formatCurrency } from "../lib/formatCurrencyUtils";
 
 export default function FinTotal() {
   const totals = {

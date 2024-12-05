@@ -1,4 +1,4 @@
-import { formatCurrency } from "../lib/formatCurrency";
+import { formatCurrency } from "../lib/formatCurrencyUtils";
 
 interface ExpenseListItemProps {
   category_name?: string;
