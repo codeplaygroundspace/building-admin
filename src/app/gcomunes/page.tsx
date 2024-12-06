@@ -3,7 +3,7 @@
 import ExpenseBreakdown from "@/components/FinExpenseBreakdown";
 import ExpenseSummary from "@/components/FinExpensesSummary";
 import PieChartComponent from "@/components/charts/PieChart";
-import { useExpenses } from "@/lib/hooks/useExpenses";
+import { useExpenses } from "../../hooks/useExpenses";
 
 export default function ExpensesPage({
   selectedMonth,

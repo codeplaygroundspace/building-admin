@@ -1,6 +1,6 @@
 import CardWrapper from "./CardWrapper";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "../lib/formatCurrencyUtils";
+import { formatCurrency } from "../helpers/formatCurrency";
 
 export default function CreditsDebitsBreakdown() {
   const transactions = [

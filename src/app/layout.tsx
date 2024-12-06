@@ -5,8 +5,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import MainMenu from "@/components/MainMenu";
 import HeaderWrapper from "@/components/HeaderWrapper";
-import { useBuildingAddress } from "@/lib/hooks/useBuildingAddress";
-import { useMonths } from "@/lib/hooks/useMonths"; // Import your hook for fetching months
+import { useBuildingAddress } from "../hooks/useBuildingAddress";
+import { useMonths } from "../hooks/useMonths"; // Import your hook for fetching months
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

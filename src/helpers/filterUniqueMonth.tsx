@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
-import { Expense } from "./types/expense";
+import { Expense } from "@/types/expense";
 
 //Outcome: ["August 2024", "October 2024", "November 2024"]
 
-export const getUniqueMonths = (expenses: Expense[]): string[] => {
+export const filterUniqueMonth = (expenses: Expense[]): string[] => {
   const uniqueMonths = Array.from(
     new Set(
       expenses
