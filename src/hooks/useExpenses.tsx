@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { fetchExpenses } from "../../lib/expensesService";
-import { calcTotalExpenses } from "../calcTotalExpensesUtils";
+import { fetchExpenses } from "../helpers/fetchExpenses";
+import { calcTotalExpenses } from "../helpers/calcTotalExpenses";
 import { Expense, DashboardData } from "../types/expense";
 
 export const useExpenses = (selectedMonth: string | null) => {

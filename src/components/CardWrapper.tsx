@@ -1,13 +1,5 @@
-// import { ReactNode } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { CardWrapperProps } from "@/lib/types/cardWrapper";
-
-// interface CardWrapperProps {
-//   title: ReactNode;
-//   footer?: ReactNode;
-//   className?: string;
-//   children: ReactNode;
-// }
+import { CardWrapperProps } from "@/types/cardWrapper";
 
 export default function CardWrapper({
   title,

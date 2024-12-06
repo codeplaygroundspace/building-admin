@@ -1,5 +1,4 @@
 "use client";
-
 import { House, Receipt, PiggyBank, Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

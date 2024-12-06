@@ -2,7 +2,7 @@
 
 import { Pie, PieChart } from "recharts";
 import CardWrapper from "../CardWrapper";
-import { formatCurrency } from "../../lib/formatCurrencyUtils";
+import { formatCurrency } from "../../helpers/formatCurrency";
 import { Expense } from "../../lib/types/expense";
 
 import {

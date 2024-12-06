@@ -1,5 +1,5 @@
-import BuildingName from "./BuildingName";
-import SelectMonth from "./SelectMonth";
+import BuildingName from "@/components/BuildingName";
+import SelectMonth from "@/components/SelectMonth";
 
 interface HeaderWrapperProps {
   selectedMonth: string | null;

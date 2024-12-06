@@ -1,4 +1,4 @@
-import { useBuildingAddress } from "@/lib/hooks/useBuildingAddress";
+import { useBuildingAddress } from "@/hooks/useBuildingAddress";
 
 interface BuildingNameProps {
   buildingId: string; // Pass the `building_id` as a prop

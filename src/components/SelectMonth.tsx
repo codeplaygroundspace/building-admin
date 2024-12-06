@@ -1,7 +1,7 @@
 //The SelectMonth component itself does NOT fetch or filter data—it only passes the selected month to its parent.
 "use client";
 import { useEffect } from "react";
-import { useMonths } from "../lib/hooks/useMonths";
+import { useMonths } from "../hooks/useMonths";
 import { Dropdown } from "./Dropdown";
 import dayjs from "dayjs";
 

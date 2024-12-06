@@ -1,4 +1,4 @@
-import { Expense } from "./types/expense";
+import { Expense } from "@/types/expense";
 
 // Calculate total expenses
 export function calcTotalExpenses(expenses: { expenses: Expense[] }): number {
