@@ -8,7 +8,7 @@ import { useBuilding } from "@/contexts/building-context";
 
 export default function HeaderWrapper() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const { months, error, isLoading } = useMonths();
+  const { months, isLoading } = useMonths();
   const { building, isLoading: isBuildingLoading } = useBuilding();
 
   // Set default month when months are loaded

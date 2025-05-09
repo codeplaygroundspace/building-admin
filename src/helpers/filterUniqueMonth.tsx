@@ -4,15 +4,33 @@ import { Expense } from "@/types/expense";
 //Outcome: ["August 2024", "October 2024", "November 2024"]
 
 export const filterUniqueMonth = (expenses: Expense[]): string[] => {
-  const uniqueMonths = Array.from(
-    new Set(
-      expenses
-        .filter((expense) => expense.created_at !== null)
-        .map((expense) =>
-          dayjs(expense.created_at).startOf("month").toISOString()
-        )
-    )
-  ).sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1));
+  const months = new Set<string>();
 
-  return uniqueMonths.map((isoDate) => dayjs(isoDate).format("MMMM YYYY"));
+  // Go through each expense
+  expenses.forEach((expense) => {
+    // If it has a created_at date, add that month
+    if (expense.created_at) {
+      const createdAtMonth = dayjs(expense.created_at).format("MMMM YYYY");
+      months.add(createdAtMonth);
+    }
+
+    // If it has date_from, add that month
+    if ((expense as any).date_from) {
+      const dateFromMonth = dayjs((expense as any).date_from).format(
+        "MMMM YYYY"
+      );
+      months.add(dateFromMonth);
+    }
+
+    // If it has date_to, add that month
+    if ((expense as any).date_to) {
+      const dateToMonth = dayjs((expense as any).date_to).format("MMMM YYYY");
+      months.add(dateToMonth);
+    }
+  });
+
+  // Convert to array and sort chronologically
+  return Array.from(months).sort((a, b) =>
+    dayjs(a, "MMMM YYYY").diff(dayjs(b, "MMMM YYYY"))
+  );
 };
