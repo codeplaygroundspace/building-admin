@@ -15,16 +15,14 @@ export const filterUniqueMonth = (expenses: Expense[]): string[] => {
     }
 
     // If it has date_from, add that month
-    if ((expense as any).date_from) {
-      const dateFromMonth = dayjs((expense as any).date_from).format(
-        "MMMM YYYY"
-      );
+    if (expense.date_from) {
+      const dateFromMonth = dayjs(expense.date_from).format("MMMM YYYY");
       months.add(dateFromMonth);
     }
 
     // If it has date_to, add that month
-    if ((expense as any).date_to) {
-      const dateToMonth = dayjs((expense as any).date_to).format("MMMM YYYY");
+    if (expense.date_to) {
+      const dateToMonth = dayjs(expense.date_to).format("MMMM YYYY");
       months.add(dateToMonth);
     }
   });

@@ -11,20 +11,22 @@
 /**
  * Expense Interface
  *
- * Represents a single expense record as stored in the Supabase database.
- * This interface is used for displaying, filtering, and manipulating expense data.
+ * Represents a single expense record as returned by the API.
+ * Note: Some fields are computed/transformed by the API
+ * and don't directly exist in the database table.
  */
 export interface Expense {
   id: string; // Unique identifier (UUID)
   created_at: string | null; // When the record was created in ISO format
   date_from?: string | null; // Optional start date of the expense period
   date_to?: string | null; // Optional end date of the expense period
-  category_name: string; // Category of the expense (e.g., "Utilities")
+  provider_name: string; // Name of the provider from the providers table
   description: string; // Detailed description of the expense
   amount: number; // Monetary amount of the expense
-  building_address: string; // Human-readable building address
+  building_address: string; // Human-readable building address (from buildings table)
   building_id: string; // Reference to the building (UUID)
-  provider_id?: string; // Optional reference to the service provider
+  provider_id?: string; // Reference to the service provider (UUID)
+  provider_category: string; // Category of the service provider
 }
 
 /**

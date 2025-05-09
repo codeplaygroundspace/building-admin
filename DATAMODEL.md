@@ -6,20 +6,37 @@ The application uses Supabase with the following main tables:
 
 ### expenses
 
-Stores expense records with categories, amounts, and building information.
+Stores expense records with amounts, and building information.
 
-| Column           | Type          | Description                                         |
-| ---------------- | ------------- | --------------------------------------------------- |
-| id               | string (UUID) | Primary key                                         |
-| created_at       | timestamp     | When the record was created                         |
-| date_from        | timestamp     | Start date for the expense period                   |
-| date_to          | timestamp     | End date for the expense period                     |
-| category_name    | string        | Expense category (e.g., "Utilities", "Maintenance") |
-| description      | string        | Detailed description of the expense                 |
-| amount           | number        | The expense amount                                  |
-| building_address | string        | Building address (redundant for better performance) |
-| building_id      | string (UUID) | Foreign key to buildings table                      |
-| provider_id      | string (UUID) | Optional foreign key to providers table             |
+| Column      | Type          | Description                         |
+| ----------- | ------------- | ----------------------------------- |
+| id          | string (UUID) | Primary key                         |
+| created_at  | timestamp     | When the record was created         |
+| date_from   | timestamp     | Start date for the expense period   |
+| date_to     | timestamp     | End date for the expense period     |
+| description | string        | Detailed description of the expense |
+| amount      | number        | The expense amount                  |
+| building_id | string (UUID) | Foreign key to buildings table      |
+| provider_id | string (UUID) | Foreign key to providers table      |
+
+### providers
+
+Contains information about service providers.
+
+| Column               | Type          | Description                              |
+| -------------------- | ------------- | ---------------------------------------- |
+| id                   | string (UUID) | Primary key                              |
+| name                 | string        | Name of the service provider             |
+| provider_category_id | string (UUID) | Foreign key to provider_categories table |
+
+### provider_categories
+
+Contains categories for service providers.
+
+| Column | Type          | Description                   |
+| ------ | ------------- | ----------------------------- |
+| id     | string (UUID) | Primary key                   |
+| name   | string        | Name of the provider category |
 
 ### buildings
 
@@ -43,6 +60,8 @@ Contains building details like addresses and contact information.
 
    - Located in `src/app/api/`
    - API routes communicate with Supabase to fetch and manipulate data
+   - The API joins the expenses, providers, and provider_categories tables
+   - **Data Transformation**: The API transforms data to include `provider_name` and `provider_category` fields for the UI
    - Implement caching, filtering, and error handling
 
 3. **Data Caching**:
@@ -78,6 +97,7 @@ The app uses TypeScript interfaces to ensure type safety:
 1. **Expense Interface** (`src/types/expense.ts`):
 
    - Defines the structure of expense objects
+   - Includes provider information (name and category)
    - Used throughout the application to ensure consistent data handling
 
 2. **Building Interface** (`src/types/building.ts`):

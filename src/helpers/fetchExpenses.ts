@@ -49,7 +49,8 @@ const fallbackData: DashboardData = {
     {
       id: "fallback-1",
       amount: 0,
-      category_name: "Sin categoría",
+      provider_name: "General",
+      provider_category: "Sin categoría",
       created_at: new Date().toISOString(),
       description: "Fallback data",
       building_id: "cd4d2980-8c5e-444e-9840-6859582c0ea5",

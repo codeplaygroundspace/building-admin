@@ -1,23 +1,25 @@
 import { formatCurrency } from "@/helpers/formatCurrency";
 
 interface ExpenseListItemProps {
-  category_name?: string;
-  provider_id?: string;
+  provider_name: string; // Name of the provider
+  provider_id?: string; // Referenced but not directly displayed
+  provider_category: string; // Provider's category (required)
   description: string;
   amount: number;
   colour?: string;
 }
 
 export default function ExpenseListItem({
-  category_name = "Desconocida",
-  provider_id,
+  provider_name = "Desconocida",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  provider_id, // Keeping parameter for API consistency
+  provider_category,
   description,
   amount,
   colour,
 }: ExpenseListItemProps) {
-  // Use category_name which should contain the provider name from the backend
-  // (provider_id is just the ID value)
-  const displayName = category_name;
+  // Use provider_name from the API
+  const displayName = provider_name;
 
   // Ensure we have a valid display name for the first letter
   const categoryInitial = (displayName || "X").charAt(0).toUpperCase();
@@ -35,7 +37,12 @@ export default function ExpenseListItem({
           </span>
         </div>
         <div>
-          <h3 className="text-lg font-semibold">{displayName}</h3>
+          <h3 className="text-lg font-semibold uppercase">
+            {displayName}
+            <span className="ml-2 text-sm font-normal text-neutral-500">
+              ({provider_category})
+            </span>
+          </h3>
           <p className="text-neutral-500">{description}</p>
         </div>
       </div>
