@@ -6,33 +6,33 @@ export default function PaymentsInfo() {
     <CardWrapper title="Información de pago">
       <ul className="list-none p-0 m-0 space-y-4">
         <li className="flex flex-col gap-1">
-          <h3 className="text-lg font-semibold">Depósito o transferencia</h3>
+          <h3 className="text-lg font-semibold">Transferencias</h3>
           <div className="flex items-center gap-2">
             <Banknote className="w-5 h-5" aria-hidden="true" />
-            <span>Cuenta: xxx.</span>
+            <p>Cuenta: xxx.</p>
           </div>
         </li>
         <li className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold">Red Pagos</h3>
           <div className="flex items-center gap-2">
             <Banknote className="w-5 h-5" aria-hidden="true" />
-            <span>Nombrar Demo Propiedades, edificio.</span>
+            <p>Nombrar Demo Propiedades, edificio.</p>
           </div>
         </li>
         <li className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold">Fecha límite</h3>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5" aria-hidden="true" />
-            <span>El día 10 de cada mes.</span>
+            <p>El día 10 de cada mes.</p>
           </div>
         </li>
         <li className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold">Recargo</h3>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5" aria-hidden="true" />
-            <span>
+            <p>
               Luego del día 10 se generará recargo de acuerdo a la ley 1234.
-            </span>
+            </p>
           </div>
         </li>
       </ul>
