@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import dayjs from "dayjs";
 
 export async function GET(request: Request) {
   // Return hardcoded expense data to bypass Supabase RLS issues
@@ -56,7 +57,11 @@ export async function GET(request: Request) {
       url.searchParams.get("building_id") ||
       url.searchParams.get("organization_id"); // Support both new and old param names
 
+    // Get month from query params
     const month = url.searchParams.get("month");
+
+    // Get previousMonth flag from query params
+    const isPreviousMonth = url.searchParams.get("previousMonth") === "true";
 
     // Filter hardcoded data if needed
     let filteredExpenses = [...hardcodedExpenses];
@@ -68,9 +73,21 @@ export async function GET(request: Request) {
     }
 
     if (month) {
-      filteredExpenses = filteredExpenses.filter(
-        (expense) => expense.month === month
-      );
+      if (isPreviousMonth) {
+        // If previousMonth is true, we want to get expenses from the month before the selected month
+        const selectedMonth = dayjs(`${month}-01`);
+        const previousMonth = selectedMonth
+          .subtract(1, "month")
+          .format("YYYY-MM");
+
+        filteredExpenses = filteredExpenses.filter(
+          (expense) => expense.month === previousMonth
+        );
+      } else {
+        filteredExpenses = filteredExpenses.filter(
+          (expense) => expense.month === month
+        );
+      }
     }
 
     return NextResponse.json({ expenses: filteredExpenses });
