@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,32 +10,74 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# Testing
 /coverage
+.nyc_output
+*.lcov
 
-# next.js
+# Next.js
 /.next/
 /out/
+.next-env
 
-# production
+# Production
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
+# Environment Variables
+.env
+.env.*
+!.env.example
 
-# debug
+# Debug & Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-.env.local
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.pem
+.project
+.classpath
+*.launch
+.settings/
 
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Vercel
+.vercel
+
+# Supabase
+/supabase/.temp
+.branches
+.temp
+.env.local
+
+# Cache & Temporary files
+.cache/
+.temp/
+.tmp/
+*.bak
+*.backup
+Thumbs.db
+
+# Build artifacts
+*.pid
+*.seed
+*.pid.lock
+
+# Optional: Package manager specific
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.npmrc
