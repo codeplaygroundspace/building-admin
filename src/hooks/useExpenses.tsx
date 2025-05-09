@@ -9,9 +9,11 @@ export const useExpenses = (selectedMonth: string | null) => {
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayMonth, setDisplayMonth] = useState<string | null>(null);
 
+  // Fetch all expenses initially (for backward compatibility)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       try {
         setLoading(true);
         const data: DashboardData = await fetchExpenses();
@@ -23,29 +25,52 @@ export const useExpenses = (selectedMonth: string | null) => {
       }
     };
 
-    fetchData();
+    fetchAllData();
   }, []);
 
+  // Fetch expenses for the selected month
   useEffect(() => {
     if (selectedMonth) {
-      const currentMonth = dayjs(selectedMonth, "MMMM YYYY").startOf("month");
-      const previousMonth = currentMonth.subtract(1, "month");
+      const fetchMonthData = async () => {
+        try {
+          setLoading(true);
 
-      const filtered = allExpenses.filter((expense) => {
-        const expenseDate = dayjs(expense.created_at).startOf("month");
-        return (
-          expenseDate.isSame(currentMonth, "month") ||
-          expenseDate.isSame(previousMonth, "month")
-        );
-      });
+          // Calculate the display month (previous month)
+          const selectedMonthDate = dayjs(selectedMonth, "MMMM YYYY");
+          const previousMonthDate = selectedMonthDate.subtract(1, "month");
+          const displayMonthString = previousMonthDate.format("MMMM YYYY");
+          setDisplayMonth(displayMonthString);
 
-      setFilteredExpenses(filtered);
+          // Fetch expenses with the month parameter
+          const data: DashboardData = await fetchExpenses({
+            month: selectedMonth,
+            previousMonth: true,
+          });
+
+          setFilteredExpenses(data.expenses);
+        } catch (err) {
+          setError(
+            err instanceof Error ? err.message : "Unknown error occurred"
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchMonthData();
     } else {
       setFilteredExpenses([]);
+      setDisplayMonth(null);
     }
-  }, [selectedMonth, allExpenses]);
+  }, [selectedMonth]);
 
   const totalExpenses = calcTotalExpenses({ expenses: filteredExpenses });
 
-  return { filteredExpenses, totalExpenses, loading, error };
+  return {
+    filteredExpenses,
+    totalExpenses,
+    loading,
+    error,
+    displayMonth,
+  };
 };

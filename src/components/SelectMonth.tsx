@@ -16,20 +16,22 @@ export default function SelectMonth({
 }: SelectMonthProps) {
   const { months, error, isLoading } = useMonths();
 
-  // Set the most recent month as the default based on user preference
+  // Always set the current month as default
   useEffect(() => {
     if (!isLoading && !selectedMonth && months.length > 0) {
       const currentMonth = dayjs().format("MMMM YYYY");
-      const fallbackMonth = dayjs().subtract(1, "month").format("MMMM YYYY");
 
-      const defaultMonth = months.includes(currentMonth)
-        ? currentMonth
-        : months.includes(fallbackMonth)
-        ? fallbackMonth
-        : months[months.length - 1];
-
-      console.log("Default Selected Month:", defaultMonth); // Add this log
-      setSelectedMonth(defaultMonth);
+      // First try to select the current month
+      if (months.includes(currentMonth)) {
+        setSelectedMonth(currentMonth);
+      }
+      // If current month isn't available yet, use the most recent month
+      else {
+        const sortedMonths = [...months].sort((a, b) =>
+          dayjs(b, "MMMM YYYY").diff(dayjs(a, "MMMM YYYY"))
+        );
+        setSelectedMonth(sortedMonths[0]);
+      }
     }
   }, [months, selectedMonth, setSelectedMonth, isLoading]);
 
