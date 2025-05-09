@@ -31,8 +31,9 @@ export default function ExpenseBreakdown({
         {expenses.map((el, index) => (
           <ExpenseListItem
             key={el.id || index}
-            category_name={el.category_name}
+            provider_name={el.provider_name}
             provider_id={el.provider_id}
+            provider_category={el.provider_category}
             description={el.description}
             amount={el.amount}
           />

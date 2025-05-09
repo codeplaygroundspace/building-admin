@@ -13,6 +13,7 @@ interface Expense {
   building_id: string;
   provider_id?: string;
   provider_name?: string; // Add provider name
+  provider_category?: string; // Add provider category
 }
 
 interface Building {
@@ -23,24 +24,27 @@ interface Building {
 interface Provider {
   id: string;
   name: string;
+  provider_category_id: string; // Changed to match database schema
+}
+
+interface ProviderCategory {
+  id: string;
+  name: string;
 }
 
 interface TransformedExpense {
   id: string;
   amount: number;
-  category_name: string;
+  provider_name: string;
   created_at: string;
   description: string;
   building_id: string;
   building_address: string;
   provider_id?: string;
+  provider_category: string;
 }
 
 interface BuildingMap {
-  [key: string]: string;
-}
-
-interface ProviderMap {
   [key: string]: string;
 }
 
@@ -120,7 +124,7 @@ export async function GET(request: Request) {
           {}
         );
 
-        // Get provider names
+        // Get provider data
         const providerIds = [
           ...new Set(
             directData
@@ -129,35 +133,65 @@ export async function GET(request: Request) {
           ),
         ];
 
+        // Get providers with their provider_category_id
         const { data: providers } = await supabase
           .from("providers")
-          .select("id, name")
+          .select("id, name, provider_category_id")
           .in("id", providerIds);
 
-        const providerMap: ProviderMap = (providers || []).reduce(
-          (map: ProviderMap, provider: Provider) => {
-            map[provider.id] = provider.name;
-            return map;
-          },
-          {}
-        );
+        // Create provider map
+        const providerMap: Record<string, Provider> = (
+          (providers || []) as Provider[]
+        ).reduce((map: Record<string, Provider>, provider: Provider) => {
+          map[provider.id] = provider;
+          return map;
+        }, {});
+
+        // Get provider categories
+        const categoryIds = [
+          ...new Set(
+            (providers || [])
+              .map((provider: Provider) => provider.provider_category_id)
+              .filter((id: string | undefined) => id != null)
+          ),
+        ];
+
+        const { data: categories } = await supabase
+          .from("provider_categories")
+          .select("id, name")
+          .in("id", categoryIds);
+
+        // Create category map
+        const categoryMap: Record<string, string> = (
+          (categories || []) as ProviderCategory[]
+        ).reduce((map: Record<string, string>, category: ProviderCategory) => {
+          map[category.id] = category.name;
+          return map;
+        }, {});
 
         // Transform the data
         const expenses: TransformedExpense[] = directData.map((expense) => {
-          const providerName = expense.provider_id
-            ? providerMap[expense.provider_id] || expense.provider_id
+          const provider = expense.provider_id
+            ? providerMap[expense.provider_id]
+            : null;
+
+          const providerName = provider ? provider.name : "Generallll";
+          const categoryId = provider ? provider.provider_category_id : null;
+          const providerCategory = categoryId
+            ? categoryMap[categoryId]
             : "General";
 
           return {
             id: expense.id,
             amount: expense.amount,
-            category_name: providerName,
+            provider_name: providerName,
             created_at: expense.created_at,
             description: expense.description,
             building_id: expense.building_id,
             building_address:
               buildingMap[expense.building_id] || "Unknown Building",
             provider_id: expense.provider_id,
+            provider_category: providerCategory,
           };
         });
 
@@ -171,9 +205,10 @@ export async function GET(request: Request) {
     // Fallback: Use simpler SQL approach without JOIN to avoid RLS issues
     let sqlQuery = `
       SELECT e.id, e.amount, e.description, e.created_at, e.date_from, e.date_to, 
-             e.building_id, e.provider_id, p.name as provider_name
+             e.building_id, e.provider_id, p.name as provider_name, pc.name as provider_category
       FROM expenses e
       LEFT JOIN providers p ON e.provider_id = p.id
+      LEFT JOIN provider_categories pc ON p.provider_category_id = pc.id
       WHERE 1=1
     `;
 
@@ -270,7 +305,7 @@ export async function GET(request: Request) {
           });
         }
 
-        // Get provider names for the filtered data
+        // Get providers with their provider_category_id
         const providerIds = [
           ...new Set(
             filteredData
@@ -281,32 +316,61 @@ export async function GET(request: Request) {
 
         const { data: providers } = await supabase
           .from("providers")
-          .select("id, name")
+          .select("id, name, provider_category_id")
           .in("id", providerIds);
 
-        const providerMap: ProviderMap = (providers || []).reduce(
-          (map: ProviderMap, provider: Provider) => {
-            map[provider.id] = provider.name;
-            return map;
-          },
-          {}
-        );
+        // Create provider map
+        const providerMap: Record<string, Provider> = (
+          (providers || []) as Provider[]
+        ).reduce((map: Record<string, Provider>, provider: Provider) => {
+          map[provider.id] = provider;
+          return map;
+        }, {});
+
+        // Get provider categories
+        const categoryIds = [
+          ...new Set(
+            (providers || [])
+              .map((provider: Provider) => provider.provider_category_id)
+              .filter((id: string | undefined) => id != null)
+          ),
+        ];
+
+        const { data: categories } = await supabase
+          .from("provider_categories")
+          .select("id, name")
+          .in("id", categoryIds);
+
+        // Create category map
+        const categoryMap: Record<string, string> = (
+          (categories || []) as ProviderCategory[]
+        ).reduce((map: Record<string, string>, category: ProviderCategory) => {
+          map[category.id] = category.name;
+          return map;
+        }, {});
 
         // Transform to expected format
         const expenses = filteredData.map((exp) => {
-          const providerName = exp.provider_id
-            ? providerMap[exp.provider_id] || exp.provider_id
+          const provider = exp.provider_id
+            ? providerMap[exp.provider_id]
+            : null;
+
+          const providerName = provider ? provider.name : "General";
+          const categoryId = provider ? provider.provider_category_id : null;
+          const providerCategory = categoryId
+            ? categoryMap[categoryId]
             : "General";
 
           return {
             id: exp.id,
             amount: exp.amount,
-            category_name: providerName,
+            provider_name: providerName,
             created_at: exp.created_at,
             description: exp.description,
             building_id: exp.building_id,
             building_address: "Building Address", // Placeholder
             provider_id: exp.provider_id,
+            provider_category: providerCategory,
           };
         });
 
@@ -318,6 +382,8 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
+
+    // The SQL query was successful, now transform the data
 
     // Manually get building addresses
     const buildingIds = [
@@ -336,20 +402,18 @@ export async function GET(request: Request) {
       {}
     );
 
-    // Transform results, using the provider_name from the SQL query result if available
+    // Transform results from SQL query (which already has provider_name and provider_category)
     const expenses: TransformedExpense[] = (data || []).map((row: Expense) => {
-      const providerName =
-        row.provider_name || (row.provider_id ? row.provider_id : "General");
-
       return {
         id: row.id,
         amount: row.amount,
-        category_name: providerName,
+        provider_name: row.provider_name || "General",
         created_at: row.created_at,
         description: row.description,
         building_id: row.building_id,
-        building_address: buildingMap[row.building_id] || "Ejido 123",
+        building_address: buildingMap[row.building_id] || "Ejido 123333",
         provider_id: row.provider_id,
+        provider_category: row.provider_category || "General",
       };
     });
 
@@ -363,12 +427,13 @@ export async function GET(request: Request) {
         {
           id: "fallback-1",
           amount: 15000,
-          category_name: "Mantenimiento",
+          provider_name: "Mantenimiento",
           created_at: new Date().toISOString(),
           description: "Mantenimiento mensual",
           building_id: "cd4d2980-8c5e-444e-9840-6859582c0ea5",
           building_address: "Ejido 123",
-          provider_id: "Mantenimiento", // Add provider_id to fallback data
+          provider_id: "Mantenimiento",
+          provider_category: "General",
         },
       ],
     };

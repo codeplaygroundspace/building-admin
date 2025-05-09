@@ -61,15 +61,15 @@ export default function PieChartComponent({ expenses }: ExpenseChartProps) {
     return <p>No hay información para mostrar la gráfica.</p>;
   }
 
-  // Function to generate a color based on category name (consistent hash)
-  const getCategoryColor = (categoryName: string, index: number): string => {
-    // Use index as fallback if no category name
-    if (!categoryName) return chartColors[index % chartColors.length];
+  // Function to generate a color based on provider name (consistent hash)
+  const getProviderColor = (providerName: string, index: number): string => {
+    // Use index as fallback if no provider name
+    if (!providerName) return chartColors[index % chartColors.length];
 
-    // Simple hash function to generate a consistent index based on category name
+    // Simple hash function to generate a consistent index based on provider name
     let hash = 0;
-    for (let i = 0; i < categoryName.length; i++) {
-      hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < providerName.length; i++) {
+      hash = providerName.charCodeAt(i) + ((hash << 5) - hash);
     }
 
     // Use the hash to select a color from our array
@@ -80,9 +80,9 @@ export default function PieChartComponent({ expenses }: ExpenseChartProps) {
   // Transform the expenses data into chart-friendly format
   const chartData = expenses.map((expense, index) => ({
     amount: expense.amount,
-    category: expense.category_name || "Sin categoría",
+    category: expense.provider_name || "Sin categoría",
     formattedAmount: formatCurrency(expense.amount),
-    fill: getCategoryColor(expense.category_name, index),
+    fill: getProviderColor(expense.provider_name, index),
   }));
 
   return (
