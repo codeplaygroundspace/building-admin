@@ -11,6 +11,9 @@ A comprehensive admin panel built with **Next.js**, **React**, and **Tailwind CS
 
 - 📊 **Financial Overview**: View total finances, expenses, and financial breakdowns
 - 📅 **Monthly Data Selection**: Filter financial data by month
+  - When selecting a month, the app displays data from the **previous month**
+  - For example, selecting "March 2023" shows February 2023 data
+  - Data is filtered based on expense date ranges (`date_from` to `date_to`), not creation date
 - 🏢 **Building Management**: View and manage building information
 - 💰 **Expense Tracking**: Track and categorize expenses with visual breakdowns
 - 📱 **Responsive Design**: Optimized for desktop and mobile devices
@@ -134,6 +137,8 @@ The application uses Supabase with the following main tables:
 
 - **expenses**: Stores expense records with categories, amounts, and building information
 - **buildings**: Contains building details like addresses and contact information
+
+For detailed information about the data model, data flow, and best practices for working with data in this application, please see the [Data Model Documentation](DATAMODEL.md).
 
 ---
 

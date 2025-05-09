@@ -1,3 +1,42 @@
+/**
+ * Expense Data Fetching Module
+ *
+ * This module provides functions for fetching expense data from the API with
+ * various filtering options, caching, and error handling.
+ *
+ * Key features:
+ * - Client-side caching to reduce redundant API calls
+ * - Support for filtering by month, building, or both
+ * - Optional inclusion of previous month's data for comparison
+ * - Fallback data mechanism for error resilience
+ * - Detailed console logging for debugging
+ *
+ * IMPORTANT FILTERING BEHAVIOR:
+ * - When a month is specified, the app actually shows data from the PREVIOUS month
+ * - For example, passing { month: "March 2023" } shows data from February 2023
+ * - The filtering uses date_from and date_to fields, not created_at
+ * - Expenses are included if their date range overlaps with the target month
+ *
+ * Usage examples:
+ *
+ * // Fetch all expenses (with caching)
+ * const data = await fetchExpenses();
+ *
+ * // Fetch expenses for a specific month
+ * // Note: This will return data from January 2023, not February 2023
+ * const februaryData = await fetchExpenses({ month: "February 2023" });
+ *
+ * // Fetch expenses for a specific building
+ * const buildingData = await fetchExpenses({ buildingId: "building-uuid" });
+ *
+ * // Fetch expenses for a specific month and building without previous month data
+ * const filteredData = await fetchExpenses({
+ *   month: "March 2023",
+ *   buildingId: "building-uuid",
+ *   previousMonth: false
+ * });
+ */
+
 import { DashboardData } from "@/types/expense";
 import dayjs from "dayjs";
 
