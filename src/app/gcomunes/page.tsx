@@ -6,14 +6,17 @@ import ExpenseSummary from "@/components/FinExpensesSummary";
 import PieChartComponent from "@/components/charts/PieChart";
 import { useExpenses } from "../../hooks/useExpenses";
 import { useMonths } from "../../hooks/useMonths";
-import SelectMonth from "@/components/SelectMonth";
 import ExpensesHeader from "@/components/ExpensesHeader";
+import { useBuilding } from "@/contexts/building-context";
 
 export default function ExpensesPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const { months } = useMonths();
+  const { building } = useBuilding();
+
+  // Pass building ID to useExpenses hook
   const { filteredExpenses, totalExpenses, loading, error, displayMonth } =
-    useExpenses(selectedMonth);
+    useExpenses(selectedMonth, building?.id);
 
   // Set default month when months are loaded
   useEffect(() => {
@@ -50,10 +53,6 @@ export default function ExpensesPage() {
   return (
     <>
       <div className="mb-6">
-        <SelectMonth
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-        />
         <ExpensesHeader
           selectedMonth={selectedMonth}
           displayMonth={displayMonth}

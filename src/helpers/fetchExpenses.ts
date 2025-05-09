@@ -10,11 +10,11 @@ const fallbackData: DashboardData = {
     {
       id: "fallback-1",
       amount: 0,
-      category: "Fallback",
+      category_name: "Sin categoría",
       created_at: new Date().toISOString(),
       description: "Fallback data",
-      building_id: "b5097257-046d-409d-ad44-c68efa4f1081",
-      building_address: "Edificio (datos de respaldo)",
+      building_id: "cd4d2980-8c5e-444e-9840-6859582c0ea5",
+      building_address: "Ejido 123",
     },
   ],
 };
@@ -32,31 +32,40 @@ export const fetchExpenses = async (
 
   // Only use cache if not specifying a month and we have cached data
   if (!month && cachedExpenses && !buildingId) {
+    console.log("Using cached expenses");
     return cachedExpenses;
   }
 
   // If we're requesting the same month that's cached, return cached data
   if (month && month === cachedMonth && cachedExpenses && !buildingId) {
+    console.log(`Using cached expenses for month: ${month}`);
     return cachedExpenses;
   }
 
   try {
+    // Start with relative path for API endpoint
     let url = "/api/expenses";
     const params = new URLSearchParams();
+
+    console.log(`Fetching expenses with options:`, JSON.stringify(options));
 
     if (month) {
       // Convert from "Month YYYY" format to "YYYY-MM" format for API
       const monthDate = dayjs(month, "MMMM YYYY");
-      params.append("month", monthDate.format("YYYY-MM"));
+      const formattedMonth = monthDate.format("YYYY-MM");
+      params.append("month", formattedMonth);
+      console.log(`Month parameter: ${month} -> ${formattedMonth}`);
 
       // Whether to fetch previous month's expenses
       if (previousMonth) {
         params.append("previousMonth", "true");
+        console.log("Including previousMonth=true parameter");
       }
     }
 
     if (buildingId) {
       params.append("building_id", buildingId);
+      console.log(`Building ID parameter: ${buildingId}`);
     }
 
     // Append params to URL if there are any
@@ -64,14 +73,23 @@ export const fetchExpenses = async (
       url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url);
+    console.log(`Making API request to: ${url}`);
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+      },
+      next: { revalidate: 0 }, // Disable cache for debugging
+    });
 
     if (!response.ok) {
       console.error(`API error: ${response.status} ${response.statusText}`);
+      console.error(`Response details:`, await response.text());
       throw new Error(`Error fetching expenses: ${response.statusText}`);
     }
 
+    console.log("API response received, parsing JSON");
     const data: DashboardData = await response.json();
+    console.log(`Received ${data.expenses?.length || 0} expenses`);
 
     if (!data.expenses || !Array.isArray(data.expenses)) {
       console.error("Invalid data format received from API:", data);
@@ -81,17 +99,20 @@ export const fetchExpenses = async (
     // Only cache if not specifying a month or building
     if (!month && !buildingId) {
       cachedExpenses = data;
+      console.log("Caching all expenses");
     }
 
     // Save which month was cached
     if (month && !buildingId) {
       cachedMonth = month;
       cachedExpenses = data;
+      console.log(`Caching expenses for month: ${month}`);
     }
 
     return data;
   } catch (error) {
     console.error("Error in fetchExpenses:", error);
+    console.warn("Using fallback data due to error");
 
     // Use fallback data if API call fails
     return fallbackData;

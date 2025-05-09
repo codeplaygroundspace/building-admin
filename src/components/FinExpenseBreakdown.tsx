@@ -17,7 +17,7 @@ export default function ExpenseBreakdown({
 }: ExpenseBreakdownProps) {
   // Check if data is defined
   if (!expenses || expenses.length === 0) {
-    return <p>No se encontraron gastos comunes.</p>; // Handle the case where no expenses are available
+    return <p>No se encontraron gastos comunes.</p>;
   }
 
   return (
@@ -30,11 +30,11 @@ export default function ExpenseBreakdown({
       <ul className="space-y-4">
         {expenses.map((el, index) => (
           <ExpenseListItem
-            key={index}
+            key={el.id || index}
             category_name={el.category_name}
+            provider_id={el.provider_id}
             description={el.description}
             amount={el.amount}
-            colour={el.colour}
           />
         ))}
       </ul>

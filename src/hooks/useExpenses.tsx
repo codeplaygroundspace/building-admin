@@ -4,8 +4,10 @@ import { fetchExpenses } from "../helpers/fetchExpenses";
 import { calcTotalExpenses } from "../helpers/calcTotalExpenses";
 import { Expense, DashboardData } from "../types/expense";
 
-export const useExpenses = (selectedMonth: string | null) => {
-  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
+export const useExpenses = (
+  selectedMonth: string | null,
+  buildingId?: string
+) => {
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +18,8 @@ export const useExpenses = (selectedMonth: string | null) => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const data: DashboardData = await fetchExpenses();
-        setAllExpenses(data.expenses);
+        // Pass building ID when fetching all expenses
+        await fetchExpenses({ buildingId });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
@@ -26,7 +28,7 @@ export const useExpenses = (selectedMonth: string | null) => {
     };
 
     fetchAllData();
-  }, []);
+  }, [buildingId]);
 
   // Fetch expenses for the selected month
   useEffect(() => {
@@ -41,10 +43,11 @@ export const useExpenses = (selectedMonth: string | null) => {
           const displayMonthString = previousMonthDate.format("MMMM YYYY");
           setDisplayMonth(displayMonthString);
 
-          // Fetch expenses with the month parameter
+          // Fetch expenses with the month parameter and building ID
           const data: DashboardData = await fetchExpenses({
             month: selectedMonth,
             previousMonth: true,
+            buildingId,
           });
 
           setFilteredExpenses(data.expenses);
@@ -62,7 +65,7 @@ export const useExpenses = (selectedMonth: string | null) => {
       setFilteredExpenses([]);
       setDisplayMonth(null);
     }
-  }, [selectedMonth]);
+  }, [selectedMonth, buildingId]);
 
   const totalExpenses = calcTotalExpenses({ expenses: filteredExpenses });
 

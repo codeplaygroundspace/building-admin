@@ -3,7 +3,7 @@
 import { Pie, PieChart } from "recharts";
 import CardWrapper from "../CardWrapper";
 import { formatCurrency } from "../../helpers/formatCurrency";
-import { Expense } from "../../lib/types/expense";
+import { Expense } from "@/types/expense";
 
 import {
   ChartConfig,
@@ -15,6 +15,19 @@ import {
 interface ExpenseChartProps {
   expenses: Expense[]; // Updated to accept an array of Expense objects
 }
+
+// Define a set of colors to use for the chart
+const chartColors = [
+  "#4299E1", // blue
+  "#48BB78", // green
+  "#F56565", // red
+  "#ED8936", // orange
+  "#9F7AEA", // purple
+  "#667EEA", // indigo
+  "#F687B3", // pink
+  "#38B2AC", // teal
+  "#ECC94B", // yellow
+];
 
 const chartConfig = {
   visitors: {
@@ -48,12 +61,28 @@ export default function PieChartComponent({ expenses }: ExpenseChartProps) {
     return <p>No hay información para mostrar la gráfica.</p>;
   }
 
+  // Function to generate a color based on category name (consistent hash)
+  const getCategoryColor = (categoryName: string, index: number): string => {
+    // Use index as fallback if no category name
+    if (!categoryName) return chartColors[index % chartColors.length];
+
+    // Simple hash function to generate a consistent index based on category name
+    let hash = 0;
+    for (let i = 0; i < categoryName.length; i++) {
+      hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    // Use the hash to select a color from our array
+    const colorIndex = Math.abs(hash) % chartColors.length;
+    return chartColors[colorIndex];
+  };
+
   // Transform the expenses data into chart-friendly format
-  const chartData = expenses.map((expense) => ({
+  const chartData = expenses.map((expense, index) => ({
     amount: expense.amount,
-    category: expense.category_name,
+    category: expense.category_name || "Sin categoría",
     formattedAmount: formatCurrency(expense.amount),
-    fill: expense.colour || "var(--color-default)", // Default fill if no colour
+    fill: getCategoryColor(expense.category_name, index),
   }));
 
   return (
