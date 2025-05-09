@@ -3,10 +3,10 @@ import { Mail, Phone, User } from "lucide-react"; // Replace with appropriate Sh
 
 export default function ContactInfo() {
   return (
-    <CardWrapper title="Información de contacto">
+    <CardWrapper title="Contacto">
       <ul className="list-none p-0 m-0 space-y-4">
         <li className="flex flex-col gap-1">
-          <h3 className="text-lg font-semibold ">Administración</h3>
+          <h3 className="text-lg font-semibold ">InCom</h3>
           <div className="flex items-center gap-2 ">
             <span className="sr-only">Contacto:</span>
             <User className="w-5 h-5" aria-hidden="true" />

@@ -14,11 +14,11 @@ export default function SelectMonth({
   selectedMonth,
   setSelectedMonth,
 }: SelectMonthProps) {
-  const { months, error } = useMonths();
+  const { months, error, isLoading } = useMonths();
 
   // Set the most recent month as the default based on user preference
   useEffect(() => {
-    if (!selectedMonth && months.length > 0) {
+    if (!isLoading && !selectedMonth && months.length > 0) {
       const currentMonth = dayjs().format("MMMM YYYY");
       const fallbackMonth = dayjs().subtract(1, "month").format("MMMM YYYY");
 
@@ -31,7 +31,7 @@ export default function SelectMonth({
       console.log("Default Selected Month:", defaultMonth); // Add this log
       setSelectedMonth(defaultMonth);
     }
-  }, [months, selectedMonth, setSelectedMonth]);
+  }, [months, selectedMonth, setSelectedMonth, isLoading]);
 
   return (
     <Dropdown
@@ -39,6 +39,7 @@ export default function SelectMonth({
       selectedItem={selectedMonth}
       onSelect={setSelectedMonth}
       error={error}
+      isLoading={isLoading}
     />
   );
 }

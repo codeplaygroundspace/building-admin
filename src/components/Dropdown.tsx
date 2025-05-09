@@ -8,6 +8,7 @@ interface DropdownProps {
   selectedItem: string | null;
   onSelect: (item: string) => void;
   error?: string | null;
+  isLoading?: boolean;
 }
 
 export const Dropdown = ({
@@ -15,6 +16,7 @@ export const Dropdown = ({
   selectedItem,
   onSelect,
   error,
+  isLoading = false,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,15 +35,21 @@ export const Dropdown = ({
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="bg-white border rounded-full px-4 py-2 shadow-sm flex items-center justify-between"
+        className={clsx(
+          "bg-white border rounded-full px-4 py-2 shadow-sm flex items-center justify-between",
+          isLoading && "opacity-75 cursor-wait"
+        )}
+        disabled={isLoading}
       >
-        <span>{selectedItem || "Cargando..."}</span>
+        <span>
+          {isLoading ? "Cargando..." : selectedItem || "Seleccione mes"}
+        </span>
         <ChevronDown className="ml-2 h-4 w-4" />
       </button>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       {isOpen && items.length > 0 && (
         <ul
-          className="absolute right-0 mt-1 bg-white border rounded-lg shadow-lg w-48 z-10"
+          className="absolute right-0 mt-1 bg-white border rounded-lg shadow-lg w-48 z-10 max-h-60 overflow-y-auto"
           role="listbox"
         >
           {items.map((item) => (

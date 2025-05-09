@@ -1,27 +1,51 @@
 import { useState, useEffect } from "react";
-import { fetchExpenses } from "@/helpers/fetchExpenses";
-import { Expense } from "@/types/expense";
 
 export const useBuildingAddress = (buildingId: string) => {
-  const [buildingAddress, setBuildingAddress] = useState<string | null>(null);
+  const [buildingAddress, setBuildingAddress] = useState<string>("Cargando...");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBuilding = async () => {
+      if (!buildingId) {
+        setBuildingAddress("ID de edificio no proporcionado");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Fetching building with ID:", buildingId);
+
       try {
         setLoading(true);
-        const data = await fetchExpenses();
 
-        // Find the building address for the given building ID
-        const expenseWithBuilding: Expense | undefined = data.expenses.find(
-          (expense: Expense) => expense.building_id === buildingId
-        );
+        // Use the buildings API endpoint
+        const response = await fetch(`/api/buildings?id=${buildingId}`);
+        console.log("API response status:", response.status);
 
-        setBuildingAddress(
-          expenseWithBuilding?.building_address || "Dirección no encontrada"
-        );
+        if (!response.ok) {
+          throw new Error(`Error fetching building: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("API response data:", data);
+
+        if (data.buildings && data.buildings.length > 0) {
+          const building = data.buildings[0];
+          console.log("Building data:", building);
+
+          // Just use the address field
+          const displayAddress = building.address || "Sin dirección";
+          console.log("Display address:", displayAddress);
+          setBuildingAddress(displayAddress);
+        } else {
+          console.log("No buildings found in response");
+          setBuildingAddress("Edificio no encontrado");
+          console.warn(`No building found with ID: ${buildingId}`);
+        }
       } catch (err) {
+        console.error("Error fetching building:", err);
+        // Set a fallback address even on error
+        setBuildingAddress("Edificio");
         setError(
           err instanceof Error
             ? err.message
@@ -32,7 +56,7 @@ export const useBuildingAddress = (buildingId: string) => {
       }
     };
 
-    if (buildingId) fetchData();
+    fetchBuilding();
   }, [buildingId]);
 
   return { buildingAddress, loading, error };
