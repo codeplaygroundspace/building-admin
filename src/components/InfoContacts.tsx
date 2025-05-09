@@ -1,5 +1,5 @@
 import CardWrapper from "@/components/CardWrapper";
-import { Mail, Phone, User } from "lucide-react"; // Replace with appropriate Shadcn icons if different
+import { Mail, Phone, User } from "lucide-react";
 
 export default function ContactInfo() {
   return (
@@ -21,6 +21,7 @@ export default function ContactInfo() {
             <span>contacto@demo.com</span>
           </div>
         </li>
+
         <li className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold ">Limpieza</h3>
           <div className="flex items-center gap-2 ">
