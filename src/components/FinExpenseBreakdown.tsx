@@ -20,6 +20,9 @@ export default function ExpenseBreakdown({
     return <p>No se encontraron gastos comunes.</p>;
   }
 
+  // Debug logging
+  console.log("FinExpenseBreakdown received expenses:", expenses);
+
   return (
     <CardWrapper title="Detalle de gastos ↗️">
       <div className="mb-4 flex justify-between items-center">
@@ -36,6 +39,8 @@ export default function ExpenseBreakdown({
             provider_category={el.provider_category}
             description={el.description}
             amount={el.amount}
+            date_from={el.date_from}
+            date_to={el.date_to}
           />
         ))}
       </ul>
