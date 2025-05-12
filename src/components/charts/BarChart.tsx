@@ -1,16 +1,11 @@
 "use client";
 
-import { Pie, PieChart } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import CardWrapper from "../CardWrapper";
 import { formatCurrency } from "../../helpers/formatCurrency";
 import { Expense } from "@/types/expense";
 
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
 interface ExpenseChartProps {
   expenses: Expense[]; // Updated to accept an array of Expense objects
@@ -55,7 +50,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function PieChartComponent({ expenses }: ExpenseChartProps) {
+export default function BarChartComponent({ expenses }: ExpenseChartProps) {
   // Check if data is defined
   if (!expenses || expenses.length === 0) {
     return <p>No hay información para mostrar la gráfica.</p>;
@@ -87,27 +82,41 @@ export default function PieChartComponent({ expenses }: ExpenseChartProps) {
 
   return (
     <CardWrapper title="Gráfica de gastos ↗️">
-      <ChartContainer
-        config={chartConfig}
-        className="mx-auto aspect-square max-h-[250px]"
-      >
-        <PieChart>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
+      <ChartContainer config={chartConfig} className="mx-auto h-[350px] w-full">
+        <BarChart
+          width={514}
+          height={350}
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 70,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="category"
+            angle={-45}
+            textAnchor="end"
+            height={70}
+            tick={{ fontSize: 12 }}
           />
-          <Pie
-            data={chartData}
-            nameKey="category"
+          <YAxis
+            tickFormatter={(value) => formatCurrency(value)}
+            tick={{ fontSize: 12 }}
+          />
+          <Tooltip
+            formatter={(value) => [formatCurrency(value as number), "Monto"]}
+            labelFormatter={(label) => `Proveedor: ${label}`}
+          />
+          <Bar
             dataKey="amount"
-            innerRadius={60}
-            outerRadius={90}
-            paddingAngle={5}
-            label={({ category, amount }) =>
-              `${category}: ${formatCurrency(amount)}`
-            }
+            fill="#4299E1"
+            name="Monto"
+            radius={[4, 4, 0, 0]}
           />
-        </PieChart>
+        </BarChart>
       </ChartContainer>
     </CardWrapper>
   );
