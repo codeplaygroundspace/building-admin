@@ -53,7 +53,15 @@ const chartConfig = {
 export default function BarChartComponent({ expenses }: ExpenseChartProps) {
   // Check if data is defined
   if (!expenses || expenses.length === 0) {
-    return <p>No hay información para mostrar la gráfica.</p>;
+    return (
+      <CardWrapper title="Gráfica de gastos ↗️">
+        <div className="p-4 text-center h-[350px] flex items-center justify-center">
+          <p className="text-gray-500">
+            No hay información para mostrar la gráfica.
+          </p>
+        </div>
+      </CardWrapper>
+    );
   }
 
   // Function to generate a color based on provider name (consistent hash)

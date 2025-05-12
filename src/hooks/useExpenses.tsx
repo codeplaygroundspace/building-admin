@@ -3,6 +3,7 @@ import { Expense, DashboardData } from "@/types/expense";
 import { fetchExpenses } from "../helpers/fetchExpenses";
 import { calcTotalExpenses } from "../helpers/calcTotalExpenses";
 import dayjs from "dayjs";
+import { useMonth } from "@/contexts/month-context";
 
 // Custom hook to fetch and filter expenses by selected month
 export const useExpenses = (
@@ -12,22 +13,35 @@ export const useExpenses = (
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { displayMonth } = useMonth();
 
   // Fetch expenses for the selected month
   useEffect(() => {
-    if (selectedMonth) {
+    if (selectedMonth && displayMonth) {
       const fetchMonthData = async () => {
         try {
           setLoading(true);
 
-          // Fetch expenses with the month parameter and building ID
+          // Fetch all expenses for this building
           const data: DashboardData = await fetchExpenses({
-            month: selectedMonth,
-            previousMonth: true,
             buildingId,
           });
 
-          setFilteredExpenses(data.expenses);
+          // Convert displayMonth from "Month YYYY" to "YYYY-MM" format for comparison
+          const displayMonthDate = dayjs(displayMonth, "MMMM YYYY");
+          const formattedDisplayMonth = displayMonthDate.format("YYYY-MM");
+
+          // Filter expenses by display month using expense_reporting_month field
+          const filteredByMonth = data.expenses.filter(
+            (expense) =>
+              expense.expense_reporting_month === formattedDisplayMonth
+          );
+
+          console.log(
+            `Filtered ${data.expenses.length} expenses to ${filteredByMonth.length} for month ${displayMonth} (${formattedDisplayMonth})`
+          );
+
+          setFilteredExpenses(filteredByMonth);
         } catch (err) {
           setError(
             err instanceof Error ? err.message : "Unknown error occurred"
@@ -41,7 +55,7 @@ export const useExpenses = (
     } else {
       setFilteredExpenses([]);
     }
-  }, [selectedMonth, buildingId]);
+  }, [selectedMonth, buildingId, displayMonth]);
 
   const totalExpenses = calcTotalExpenses({ expenses: filteredExpenses });
 

@@ -20,6 +20,7 @@ export interface Expense {
   created_at: string | null; // When the record was created in ISO format
   date_from?: string | null; // Optional start date of the expense period
   date_to?: string | null; // Optional end date of the expense period
+  expense_reporting_month: string; // Format: YYYY-MM for the month this expense should be reported in
   provider_name: string; // Name of the provider from the providers table
   description: string; // Detailed description of the expense
   amount: number; // Monetary amount of the expense

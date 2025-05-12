@@ -10,6 +10,7 @@ interface Expense {
   created_at: string;
   date_from?: string;
   date_to?: string;
+  expense_reporting_month: string;
   building_id: string;
   provider_id?: string;
   provider_name?: string; // Add provider name
@@ -44,6 +45,7 @@ interface TransformedExpense {
   provider_category: string;
   date_from?: string;
   date_to?: string;
+  expense_reporting_month: string;
 }
 
 interface BuildingMap {
@@ -71,7 +73,7 @@ export async function GET(request: Request) {
       let query = supabase
         .from("expenses")
         .select(
-          "id, amount, description, created_at, date_from, date_to, building_id, provider_id"
+          "id, amount, description, created_at, date_from, date_to, expense_reporting_month, building_id, provider_id"
         );
 
       // If building ID is provided, filter by it
@@ -171,7 +173,7 @@ export async function GET(request: Request) {
           return map;
         }, {});
 
-        // Transform the data
+        // First transformation
         const expenses: TransformedExpense[] = directData.map((expense) => {
           const provider = expense.provider_id
             ? providerMap[expense.provider_id]
@@ -196,6 +198,7 @@ export async function GET(request: Request) {
             provider_category: providerCategory,
             date_from: expense.date_from,
             date_to: expense.date_to,
+            expense_reporting_month: expense.expense_reporting_month,
           };
         });
 
@@ -208,7 +211,7 @@ export async function GET(request: Request) {
 
     // Fallback: Use simpler SQL approach without JOIN to avoid RLS issues
     let sqlQuery = `
-      SELECT e.id, e.amount, e.description, e.created_at, e.date_from, e.date_to, 
+      SELECT e.id, e.amount, e.description, e.created_at, e.date_from, e.date_to, e.expense_reporting_month,
              e.building_id, e.provider_id, p.name as provider_name, pc.name as provider_category
       FROM expenses e
       LEFT JOIN providers p ON e.provider_id = p.id
@@ -353,7 +356,7 @@ export async function GET(request: Request) {
           return map;
         }, {});
 
-        // Transform to expected format
+        // Raw data transformation
         const expenses = filteredData.map((exp) => {
           const provider = exp.provider_id
             ? providerMap[exp.provider_id]
@@ -377,6 +380,7 @@ export async function GET(request: Request) {
             provider_category: providerCategory,
             date_from: exp.date_from,
             date_to: exp.date_to,
+            expense_reporting_month: exp.expense_reporting_month,
           };
         });
 
@@ -408,7 +412,7 @@ export async function GET(request: Request) {
       {}
     );
 
-    // Transform results from SQL query (which already has provider_name and provider_category)
+    // SQL query transformation
     const expenses: TransformedExpense[] = (data || []).map((row: Expense) => {
       return {
         id: row.id,
@@ -422,6 +426,7 @@ export async function GET(request: Request) {
         provider_category: row.provider_category || "General",
         date_from: row.date_from,
         date_to: row.date_to,
+        expense_reporting_month: row.expense_reporting_month,
       };
     });
 

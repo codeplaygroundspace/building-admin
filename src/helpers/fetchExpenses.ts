@@ -55,6 +55,7 @@ const fallbackData: DashboardData = {
       description: "Fallback data",
       building_id: "cd4d2980-8c5e-444e-9840-6859582c0ea5",
       building_address: "Ejido 123",
+      expense_reporting_month: dayjs().format("YYYY-MM"),
     },
   ],
 };
