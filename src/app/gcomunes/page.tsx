@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import ExpenseBreakdown from "@/components/FinExpenseBreakdown";
 import ExpenseSummary from "@/components/FinExpensesSummary";
-import PieChartComponent from "@/components/charts/PieChart";
+import BarChartComponent from "@/components/charts/BarChart";
 import { useExpenses } from "../../hooks/useExpenses";
 import { useMonths } from "../../hooks/useMonths";
 import ExpensesHeader from "@/components/ExpensesHeader";
@@ -70,7 +70,7 @@ export default function ExpensesPage() {
             expenses={filteredExpenses}
             totalExpenses={totalExpenses}
           />
-          <PieChartComponent expenses={filteredExpenses} />
+          <BarChartComponent expenses={filteredExpenses} />
         </>
       )}
     </>
