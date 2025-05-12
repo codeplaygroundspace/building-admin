@@ -42,6 +42,8 @@ interface TransformedExpense {
   building_address: string;
   provider_id?: string;
   provider_category: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 interface BuildingMap {
@@ -192,6 +194,8 @@ export async function GET(request: Request) {
               buildingMap[expense.building_id] || "Unknown Building",
             provider_id: expense.provider_id,
             provider_category: providerCategory,
+            date_from: expense.date_from,
+            date_to: expense.date_to,
           };
         });
 
@@ -371,6 +375,8 @@ export async function GET(request: Request) {
             building_address: "Building Address", // Placeholder
             provider_id: exp.provider_id,
             provider_category: providerCategory,
+            date_from: exp.date_from,
+            date_to: exp.date_to,
           };
         });
 
@@ -414,6 +420,8 @@ export async function GET(request: Request) {
         building_address: buildingMap[row.building_id] || "Ejido 123333",
         provider_id: row.provider_id,
         provider_category: row.provider_category || "General",
+        date_from: row.date_from,
+        date_to: row.date_to,
       };
     });
 

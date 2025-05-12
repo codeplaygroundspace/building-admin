@@ -4,6 +4,7 @@ import "./globals.css";
 import MainMenu from "@/components/MainMenu";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import { BuildingProvider } from "@/contexts/building-context";
+import { MonthProvider } from "@/contexts/month-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,9 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-100`}
       >
         <BuildingProvider initialBuildingId={buildingId}>
-          <MainMenu />
-          <HeaderWrapper />
-          <main className="space-y-8 pb-24 px-4">{children}</main>
+          <MonthProvider buildingId={buildingId}>
+            <MainMenu />
+            <HeaderWrapper />
+            <main className="space-y-8 pb-24 px-4">{children}</main>
+          </MonthProvider>
         </BuildingProvider>
       </body>
     </html>

@@ -1,38 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import ExpenseBreakdown from "@/components/FinExpenseBreakdown";
 import ExpenseSummary from "@/components/FinExpensesSummary";
 import BarChartComponent from "@/components/charts/BarChart";
 import { useExpenses } from "../../hooks/useExpenses";
-import { useMonths } from "../../hooks/useMonths";
 import ExpensesHeader from "@/components/ExpensesHeader";
 import { useBuilding } from "@/contexts/building-context";
+import { useMonth } from "@/contexts/month-context";
 
 export default function ExpensesPage() {
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const { months } = useMonths();
+  const { selectedMonth, displayMonth } = useMonth();
   const { building } = useBuilding();
 
   // Pass building ID to useExpenses hook
-  const { filteredExpenses, totalExpenses, loading, error, displayMonth } =
-    useExpenses(selectedMonth, building?.id);
-
-  // Set default month when months are loaded
-  useEffect(() => {
-    if (months.length > 0 && !selectedMonth) {
-      // Default to current month
-      const currentMonth = new Date().toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      if (months.includes(currentMonth)) {
-        setSelectedMonth(currentMonth);
-      } else {
-        setSelectedMonth(months[months.length - 1]);
-      }
-    }
-  }, [months, selectedMonth]);
+  const { filteredExpenses, totalExpenses, loading, error } = useExpenses(
+    selectedMonth,
+    building?.id
+  );
 
   if (loading) {
     return (
@@ -52,27 +36,20 @@ export default function ExpensesPage() {
 
   return (
     <>
-      <div className="mb-6">
+      {displayMonth && (
         <ExpensesHeader
           selectedMonth={selectedMonth}
           displayMonth={displayMonth}
         />
-      </div>
-
-      {filteredExpenses.length === 0 ? (
-        <div className="bg-amber-50 p-4 rounded-lg text-amber-800 mb-6">
-          <p>No se encontraron gastos para {displayMonth}</p>
-        </div>
-      ) : (
-        <>
-          <ExpenseSummary totalExpenses={totalExpenses} />
-          <ExpenseBreakdown
-            expenses={filteredExpenses}
-            totalExpenses={totalExpenses}
-          />
-          <BarChartComponent expenses={filteredExpenses} />
-        </>
       )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ExpenseSummary totalExpenses={totalExpenses} />
+        <ExpenseBreakdown
+          expenses={filteredExpenses}
+          totalExpenses={totalExpenses}
+        />
+      </div>
+      <BarChartComponent expenses={filteredExpenses} />
     </>
   );
 }
