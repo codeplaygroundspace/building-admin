@@ -17,7 +17,13 @@ export default function ExpenseBreakdown({
 }: ExpenseBreakdownProps) {
   // Check if data is defined
   if (!expenses || expenses.length === 0) {
-    return <p>No se encontraron gastos comunes.</p>;
+    return (
+      <CardWrapper title="Detalle de gastos ↗️">
+        <div className="p-4 text-center">
+          <p className="text-gray-500">No se encontraron gastos comunes.</p>
+        </div>
+      </CardWrapper>
+    );
   }
 
   // Debug logging
