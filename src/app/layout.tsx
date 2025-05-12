@@ -33,8 +33,10 @@ export default function RootLayout({
         <BuildingProvider initialBuildingId={buildingId}>
           <MonthProvider buildingId={buildingId}>
             <MainMenu />
-            <HeaderWrapper />
-            <main className="space-y-8 pb-24 px-4">{children}</main>
+            <div className="md:pl-64 flex flex-col min-h-screen">
+              <HeaderWrapper />
+              <main className="space-y-8 pb-24 md:pb-8 px-4">{children}</main>
+            </div>
           </MonthProvider>
         </BuildingProvider>
       </body>
