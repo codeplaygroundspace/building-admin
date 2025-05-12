@@ -21,6 +21,12 @@ interface MonthContextType {
   error: string | null;
 }
 
+// Define a type for the params object
+interface FetchExpensesParams {
+  buildingId?: string;
+  forDropdown?: boolean;
+}
+
 const MonthContext = createContext<MonthContextType | undefined>(undefined);
 
 export function MonthProvider({
@@ -43,7 +49,7 @@ export function MonthProvider({
         setIsLoading(true);
 
         // Fetch expenses data with buildingId parameter if available
-        const params: any = {};
+        const params: FetchExpensesParams = {};
         if (buildingId) params.buildingId = buildingId;
         params.forDropdown = true; // Special flag to get all expenses for dropdown
 
@@ -88,7 +94,7 @@ export function MonthProvider({
     };
 
     fetchMonths();
-  }, [buildingId]);
+  }, [buildingId, selectedMonth]);
 
   // Update display month whenever selected month changes
   useEffect(() => {
