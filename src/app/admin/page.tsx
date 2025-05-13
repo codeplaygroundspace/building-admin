@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useBuilding } from "@/contexts/building-context";
 import CardWrapper from "@/components/CardWrapper";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,14 @@ import { toast } from "@/components/ui/use-toast";
 import dayjs from "dayjs";
 import { formatUppercase } from "@/helpers/formatters";
 import { PlusCircle, X } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 // Define provider interface
 interface Provider {
@@ -38,12 +46,37 @@ interface ExpenseItem {
   expense_reporting_month: string;
 }
 
+// Define the fetched expense interface from the API
+interface FetchedExpense {
+  id: string;
+  amount: number;
+  provider_name: string;
+  created_at: string;
+  description: string;
+  building_id: string;
+  provider_id?: string;
+  provider_category: string;
+  expense_reporting_month: string;
+}
+
+// Define sort configuration type
+type SortConfig = {
+  key: keyof FetchedExpense | null;
+  direction: "ascending" | "descending";
+};
+
 export default function AdminPage() {
   const { building } = useBuilding();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
+  const [allExpenses, setAllExpenses] = useState<FetchedExpense[]>([]);
+  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: "ascending",
+  });
 
   // Initialize with a single expense
   const [expenses, setExpenses] = useState<ExpenseItem[]>([
@@ -84,6 +117,41 @@ export default function AdminPage() {
 
     fetchProviders();
   }, []);
+
+  // Fetch expenses
+  const fetchExpenses = useCallback(async () => {
+    if (!building?.id) return;
+
+    try {
+      setIsLoadingExpenses(true);
+      const url = new URL("/api/expenses", window.location.origin);
+      url.searchParams.append("building_id", building.id);
+
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch expenses");
+      }
+
+      const data = await response.json();
+      setAllExpenses(data.expenses || []);
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load expenses",
+      });
+    } finally {
+      setIsLoadingExpenses(false);
+    }
+  }, [building?.id]);
+
+  // Fetch expenses when the building changes or after a successful submission
+  useEffect(() => {
+    if (building?.id) {
+      fetchExpenses();
+    }
+  }, [building?.id, fetchExpenses]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -233,6 +301,9 @@ export default function AdminPage() {
         title: "Listo ✅",
         description: `${expensesData.length} gastos agregados correctamente`,
       });
+
+      // Refresh expenses list after adding new ones
+      fetchExpenses();
     } catch (error) {
       console.error("Error al agregar gastos:", error);
       toast({
@@ -245,6 +316,89 @@ export default function AdminPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Format month for display (YYYY-MM to MM/YYYY)
+  const formatMonth = (date: string) => {
+    if (!date) return "-";
+    try {
+      return dayjs(date).format("MM/YYYY");
+    } catch {
+      return date;
+    }
+  };
+
+  // Format currency for display
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+    }).format(amount);
+  };
+
+  // Handle sorting
+  const requestSort = (key: keyof FetchedExpense) => {
+    let direction: "ascending" | "descending" = "ascending";
+
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+
+    setSortConfig({ key, direction });
+  };
+
+  // Get sorted expenses
+  const getSortedExpenses = () => {
+    const sortableExpenses = [...allExpenses];
+
+    if (sortConfig.key !== null) {
+      sortableExpenses.sort((a, b) => {
+        // Handle string comparison (case insensitive)
+        if (
+          typeof a[sortConfig.key!] === "string" &&
+          typeof b[sortConfig.key!] === "string"
+        ) {
+          const valueA = (a[sortConfig.key!] as string).toLowerCase();
+          const valueB = (b[sortConfig.key!] as string).toLowerCase();
+
+          if (valueA < valueB) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
+          }
+          if (valueA > valueB) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
+          }
+          return 0;
+        }
+
+        // Handle number comparison
+        if (
+          typeof a[sortConfig.key!] === "number" &&
+          typeof b[sortConfig.key!] === "number"
+        ) {
+          return sortConfig.direction === "ascending"
+            ? (a[sortConfig.key!] as number) - (b[sortConfig.key!] as number)
+            : (b[sortConfig.key!] as number) - (a[sortConfig.key!] as number);
+        }
+
+        // Default fallback
+        return 0;
+      });
+    }
+
+    return sortableExpenses;
+  };
+
+  // Get sort direction icon
+  const getSortDirectionIcon = (columnKey: keyof FetchedExpense) => {
+    if (sortConfig.key !== columnKey) {
+      return <span className="text-gray-300 ml-1">⇅</span>;
+    }
+
+    return sortConfig.direction === "ascending" ? (
+      <span className="text-black ml-1">↑</span>
+    ) : (
+      <span className="text-black ml-1">↓</span>
+    );
   };
 
   // Group providers by category for better organization
@@ -260,8 +414,11 @@ export default function AdminPage() {
   // Check if we can add more expenses (max 8)
   const canAddMoreExpenses = expenses.length < 8;
 
+  // Get sorted expenses
+  const sortedExpenses = getSortedExpenses();
+
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 space-y-8">
       <CardWrapper title="Agregar gastos">
         <form onSubmit={handleSubmit} className="space-y-6 p-4">
           {/* Common month selector for all expenses */}
@@ -399,6 +556,86 @@ export default function AdminPage() {
             </Button>
           </div>
         </form>
+      </CardWrapper>
+
+      {/* Expenses Table */}
+      <CardWrapper title="Gastos registrados">
+        <div className="p-4">
+          {isLoadingExpenses ? (
+            <div className="text-center py-8">Cargando gastos...</div>
+          ) : allExpenses.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No hay gastos registrados para este edificio.
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => requestSort("provider_name")}
+                    >
+                      Proveedor {getSortDirectionIcon("provider_name")}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => requestSort("provider_category")}
+                    >
+                      Categoría {getSortDirectionIcon("provider_category")}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => requestSort("amount")}
+                    >
+                      Monto {getSortDirectionIcon("amount")}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => requestSort("expense_reporting_month")}
+                    >
+                      Mes que reporta{" "}
+                      {getSortDirectionIcon("expense_reporting_month")}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => requestSort("description")}
+                    >
+                      Descripción {getSortDirectionIcon("description")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedExpenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell className="font-medium">
+                        {formatUppercase(expense.provider_name || "General")}
+                      </TableCell>
+                      <TableCell>{expense.provider_category}</TableCell>
+                      <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell>
+                        {formatMonth(expense.expense_reporting_month)}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {expense.description || "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          <div className="flex justify-end mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={fetchExpenses}
+              disabled={isLoadingExpenses || !building?.id}
+            >
+              Actualizar lista
+            </Button>
+          </div>
+        </div>
       </CardWrapper>
     </div>
   );
