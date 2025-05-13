@@ -1,8 +1,7 @@
 // Inspired by react-hot-toast library
-import { useState, useEffect, useCallback, ReactNode } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
 
 type ToastType = "default" | "destructive";
 

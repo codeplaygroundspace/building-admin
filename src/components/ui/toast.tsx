@@ -1,15 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { toast, useToast } from "./use-toast";
+import { useToast } from "./use-toast";
 import { cn } from "@/helpers/utils";
 import { X } from "lucide-react";
-
-interface ToastProps {
-  title?: string;
-  description?: string;
-  type?: "default" | "destructive";
-}
 
 export function Toaster() {
   const { toasts, dismiss } = useToast();
