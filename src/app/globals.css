@@ -30,6 +30,30 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
+    /* Expense Category Colors - Background */
+    --category-agua-bg: 195 95% 95%;
+    --category-comision-bancaria-bg: 330 70% 95%;
+    --category-seguridad-bg: 35 92% 95%;
+    --category-emergencia-bg: 0 90% 95%;
+    --category-sanitaria-bg: 180 80% 95%;
+    --category-administracion-bg: 145 80% 95%;
+    --category-limpieza-bg: 270 80% 95%;
+    --category-otros-bg: 200 18% 95%;
+    --category-electricista-bg: 220 85% 95%;
+    --category-electricidad-bg: 30 90% 95%;
+
+    /* Expense Category Colors - Text */
+    --category-agua-text: 195 95% 35%;
+    --category-comision-bancaria-text: 330 70% 40%;
+    --category-seguridad-text: 35 92% 40%;
+    --category-emergencia-text: 0 90% 40%;
+    --category-sanitaria-text: 180 80% 35%;
+    --category-administracion-text: 145 80% 35%;
+    --category-limpieza-text: 270 80% 40%;
+    --category-otros-text: 200 18% 40%;
+    --category-electricista-text: 220 85% 40%;
+    --category-electricidad-text: 30 90% 40%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 270 95% 75%;
@@ -65,6 +89,30 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
+    /* Expense Category Colors - Dark Mode */
+    --category-agua-bg: 195 30% 20%;
+    --category-comision-bancaria-bg: 330 30% 20%;
+    --category-seguridad-bg: 35 30% 20%;
+    --category-emergencia-bg: 0 30% 20%;
+    --category-sanitaria-bg: 180 30% 20%;
+    --category-administracion-bg: 145 30% 20%;
+    --category-limpieza-bg: 270 30% 20%;
+    --category-otros-bg: 200 18% 20%;
+    --category-electricista-bg: 220 30% 20%;
+    --category-electricidad-bg: 30 30% 20%;
+
+    /* Expense Category Colors - Text Dark Mode */
+    --category-agua-text: 195 95% 80%;
+    --category-comision-bancaria-text: 330 70% 80%;
+    --category-seguridad-text: 35 92% 80%;
+    --category-emergencia-text: 0 90% 80%;
+    --category-sanitaria-text: 180 80% 80%;
+    --category-administracion-text: 145 80% 80%;
+    --category-limpieza-text: 270 80% 80%;
+    --category-otros-text: 200 18% 80%;
+    --category-electricista-text: 220 85% 80%;
+    --category-electricidad-text: 30 90% 80%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 270 95% 75%;
@@ -83,4 +131,63 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Common badge styling */
+.category-badge {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  display: inline-block;
+}
+
+/* Category color utility classes for badges */
+.badge-agua {
+  background-color: hsl(var(--category-agua-bg));
+  color: hsl(var(--category-agua-text));
+}
+
+.badge-comision-bancaria {
+  background-color: hsl(var(--category-comision-bancaria-bg));
+  color: hsl(var(--category-comision-bancaria-text));
+}
+
+.badge-seguridad {
+  background-color: hsl(var(--category-seguridad-bg));
+  color: hsl(var(--category-seguridad-text));
+}
+
+.badge-emergencia {
+  background-color: hsl(var(--category-emergencia-bg));
+  color: hsl(var(--category-emergencia-text));
+}
+
+.badge-sanitaria {
+  background-color: hsl(var(--category-sanitaria-bg));
+  color: hsl(var(--category-sanitaria-text));
+}
+
+.badge-administracion {
+  background-color: hsl(var(--category-administracion-bg));
+  color: hsl(var(--category-administracion-text));
+}
+
+.badge-limpieza {
+  background-color: hsl(var(--category-limpieza-bg));
+  color: hsl(var(--category-limpieza-text));
+}
+
+.badge-otros {
+  background-color: hsl(var(--category-otros-bg));
+  color: hsl(var(--category-otros-text));
+}
+
+.badge-electricista {
+  background-color: hsl(var(--category-electricista-bg));
+  color: hsl(var(--category-electricista-text));
+}
+
+.badge-electricidad {
+  background-color: hsl(var(--category-electricidad-bg));
+  color: hsl(var(--category-electricidad-text));
 }

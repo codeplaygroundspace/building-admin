@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/helpers/formatCurrency";
 import dayjs from "dayjs";
+import { getCategoryColor } from "@/helpers/getCategoryColor";
 
 interface ExpenseListItemProps {
   provider_name: string; // Name of the provider
@@ -7,7 +8,7 @@ interface ExpenseListItemProps {
   provider_category: string; // Provider's category (required)
   description: string;
   amount: number;
-  colour?: string;
+  colour?: string; // Still support custom color as a fallback
   date_from?: string | null; // Added date_from property
   date_to?: string | null; // Added date_to property
 }
@@ -19,7 +20,8 @@ export default function ExpenseListItem({
   provider_category,
   description,
   amount,
-  colour,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  colour, // Keeping for backward compatibility but using category colors instead
   date_from,
   date_to,
 }: ExpenseListItemProps) {
@@ -59,12 +61,18 @@ export default function ExpenseListItem({
     dateRange = `Hasta: ${formatDate(date_to)}`;
   }
 
+  // Capitalize first letter of provider_category but keep the rest as is
+  const formattedCategory =
+    provider_category.charAt(0).toUpperCase() + provider_category.slice(1);
+
+  // Get the appropriate category badge class
+  const categoryBadgeClass = getCategoryColor(provider_category);
+
   return (
     <li className="flex justify-between items-start">
       <div className="flex items-start gap-2 pr-4">
         <div
-          className="size-8 aspect-square rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: colour || "#000000" }}
+          className="size-8 aspect-square rounded-lg flex items-center justify-center bg-black"
           aria-hidden="true"
         >
           <span className="text-white text-xl font-bold">
@@ -72,12 +80,10 @@ export default function ExpenseListItem({
           </span>
         </div>
         <div>
-          <h3 className="text-lg font-semibold uppercase">
-            {displayName}
-            <span className="ml-2 text-sm font-normal text-neutral-500">
-              ({provider_category})
-            </span>
-          </h3>
+          <h3 className="text-lg font-semibold uppercase">{displayName}</h3>
+          <span className={`category-badge ${categoryBadgeClass}`}>
+            {formattedCategory}
+          </span>
           {dateRange && (
             <p className="text-sm font-semibold text-black mb-1">{dateRange}</p>
           )}
