@@ -5,6 +5,7 @@ import MainMenu from "@/components/MainMenu";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import { BuildingProvider } from "@/contexts/building-context";
 import { MonthProvider } from "@/contexts/month-context";
+import { Toaster } from "@/components/ui/toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,6 +38,7 @@ export default function RootLayout({
               <HeaderWrapper />
               <main className="space-y-8 pb-24 md:pb-8 px-4">{children}</main>
             </div>
+            <Toaster />
           </MonthProvider>
         </BuildingProvider>
       </body>
