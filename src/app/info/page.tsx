@@ -4,10 +4,12 @@ import BuildingInfoCard from "@/components/InfoBuilding";
 
 export default function Info() {
   return (
-    <>
-      <BuildingInfoCard />
-      <PaymentsInfo />
-      <ContactInfo />
-    </>
+    <div className="container mx-auto py-8">
+      <div className="flex flex-col space-y-8">
+        <BuildingInfoCard />
+        <PaymentsInfo />
+        <ContactInfo />
+      </div>
+    </div>
   );
 }
