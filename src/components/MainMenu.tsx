@@ -1,5 +1,12 @@
 "use client";
-import { House, Receipt, PiggyBank, Info, Building } from "lucide-react";
+import {
+  House,
+  Receipt,
+  PiggyBank,
+  Info,
+  Building,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/helpers/utils";
@@ -17,6 +24,7 @@ export default function MainMenu() {
     { icon: Receipt, name: "GC", href: "/gcomunes" },
     { icon: PiggyBank, name: "Fondo", href: "/fondo" },
     { icon: Info, name: "Info", href: "/info" },
+    { icon: Settings, name: "Admin", href: "/admin" },
   ];
 
   // Render different navigation layouts based on screen size
