@@ -4,7 +4,6 @@ import {
   Receipt,
   PiggyBank,
   Info,
-  Building,
   Settings,
   Menu,
   X,
@@ -16,22 +15,20 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/helpers/utils";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useBuilding } from "@/contexts/building-context";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function MainMenu() {
   const pathname = usePathname();
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const { building } = useBuilding();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuCollapsed, setIsDesktopMenuCollapsed] = useState(false);
 
   const navLinks = [
-    { icon: House, name: "Apto", href: "/" },
-    { icon: Receipt, name: "GC", href: "/gcomunes" },
-    { icon: PiggyBank, name: "Fondo", href: "/fondo" },
-    { icon: Info, name: "Info", href: "/info" },
+    { icon: House, name: "Apartamentos", href: "/" },
+    { icon: Receipt, name: "Gastos comunes", href: "/gcomunes" },
+    { icon: PiggyBank, name: "Fondo de reserva", href: "/fondo" },
+    { icon: Info, name: "Informacion", href: "/info" },
     { icon: Settings, name: "Admin", href: "/admin" },
   ];
 
@@ -108,19 +105,6 @@ export default function MainMenu() {
         <ScrollArea className="h-[calc(100%-40px)]">
           <div className="flex flex-col py-3 h-full">
             <div className="px-3 py-2">
-              <div
-                className={cn(
-                  "mb-6 flex items-center px-4",
-                  isDesktopMenuCollapsed && "justify-center px-0"
-                )}
-              >
-                <Building className="h-6 w-6 text-primary" />
-                {!isDesktopMenuCollapsed && (
-                  <h1 className="ml-2 text-xl font-semibold text-primary">
-                    {building?.address || "Building Admin"}
-                  </h1>
-                )}
-              </div>
               <div className="space-y-1">
                 {navLinks.map((item) => {
                   const isActive = pathname === item.href;
@@ -136,7 +120,7 @@ export default function MainMenu() {
                           ? "justify-center px-0"
                           : "px-3 gap-3",
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          ? "bg-primary/10 text-primary"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
                     >
@@ -187,13 +171,7 @@ export default function MainMenu() {
         <div className="absolute top-0 left-0 bottom-0 w-64 bg-white shadow-lg">
           <ScrollArea className="h-full">
             <div className="flex flex-col py-6 h-full">
-              <div className="px-3 py-2">
-                <div className="mb-6 flex items-center px-4 mt-8">
-                  <Building className="mr-2 h-6 w-6 text-primary" />
-                  <h1 className="text-xl font-semibold text-primary">
-                    {building?.address || "Building Admin"}
-                  </h1>
-                </div>
+              <div className="px-3 py-2 mt-8">
                 <div className="space-y-1">
                   {navLinks.map((item) => {
                     const isActive = pathname === item.href;
@@ -205,7 +183,7 @@ export default function MainMenu() {
                         className={cn(
                           "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                           isActive
-                            ? "bg-gray-100 text-black"
+                            ? "bg-primary/10 text-primary"
                             : "text-gray-600 hover:bg-gray-50 hover:text-black"
                         )}
                         onClick={() => setIsMobileMenuOpen(false)}
