@@ -42,14 +42,14 @@ export default function ExpensesPage() {
           displayMonth={displayMonth}
         />
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex flex-col space-y-6">
         <ExpenseSummary totalExpenses={totalExpenses} />
         <ExpenseBreakdown
           expenses={filteredExpenses}
           totalExpenses={totalExpenses}
         />
+        <BarChartComponent expenses={filteredExpenses} />
       </div>
-      <BarChartComponent expenses={filteredExpenses} />
     </>
   );
 }
