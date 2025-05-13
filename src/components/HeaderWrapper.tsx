@@ -16,7 +16,7 @@ export default function HeaderWrapper() {
 
   return (
     <header className="sticky top-0 z-10 bg-white shadow-sm mb-8">
-      <div className="flex justify-between items-center p-4">
+      <div className="flex justify-between items-center p-4 md:p-4 pl-16 md:pl-4 sidebar-collapsed:md:pl-4 transition-all duration-300">
         {building && <BuildingName buildingName={building.address} />}
         {isBuildingLoading && (
           <div className="animate-pulse h-6 w-32 bg-gray-200 rounded"></div>

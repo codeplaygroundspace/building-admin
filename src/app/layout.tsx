@@ -34,9 +34,9 @@ export default function RootLayout({
         <BuildingProvider initialBuildingId={buildingId}>
           <MonthProvider buildingId={buildingId}>
             <MainMenu />
-            <div className="md:pl-64 flex flex-col min-h-screen">
+            <div className="md:pl-64 sidebar-collapsed:md:pl-16 flex flex-col min-h-screen transition-all duration-300">
               <HeaderWrapper />
-              <main className="space-y-8 pb-24 md:pb-8 px-4">{children}</main>
+              <main className="space-y-8 pb-8 px-4">{children}</main>
             </div>
             <Toaster />
           </MonthProvider>
