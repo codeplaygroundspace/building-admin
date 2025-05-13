@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useBuilding } from "@/contexts/building-context";
 import CardWrapper from "@/components/CardWrapper";
 import { Button } from "@/components/ui/button";
@@ -77,11 +77,22 @@ export default function AdminPage() {
     key: null,
     direction: "ascending",
   });
+  const [nextId, setNextId] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Function to get next stable ID
+  const getNextStableId = useCallback(() => {
+    const id = `expense-${nextId}`;
+    setNextId((prev) => prev + 1);
+    return id;
+  }, [nextId]);
 
   // Initialize with a single expense
   const [expenses, setExpenses] = useState<ExpenseItem[]>([
     {
-      id: crypto.randomUUID(),
+      id: "expense-1",
       description: "",
       amount: "",
       provider_id: "",
@@ -192,7 +203,7 @@ export default function AdminPage() {
     setExpenses((prev) => [
       ...prev,
       {
-        id: crypto.randomUUID(),
+        id: getNextStableId(),
         description: "",
         amount: "",
         provider_id: "",
@@ -287,7 +298,7 @@ export default function AdminPage() {
       // Reset the form with one empty expense
       setExpenses([
         {
-          id: crypto.randomUUID(),
+          id: getNextStableId(),
           description: "",
           amount: "",
           provider_id: "",
@@ -416,6 +427,57 @@ export default function AdminPage() {
 
   // Get sorted expenses
   const sortedExpenses = getSortedExpenses();
+
+  // Add this function to calculate available months from expenses
+  const availableMonths = useMemo(() => {
+    const uniqueMonths = [
+      ...new Set(allExpenses.map((e) => e.expense_reporting_month)),
+    ];
+    return uniqueMonths.sort((a, b) => b.localeCompare(a)); // Sort in descending order (newest first)
+  }, [allExpenses]);
+
+  // Add this function to filter expenses by month and apply pagination
+  const filteredAndPaginatedExpenses = useMemo(() => {
+    // First filter by selected month if any
+    const filtered =
+      selectedMonth && selectedMonth !== "all"
+        ? sortedExpenses.filter(
+            (expense) => expense.expense_reporting_month === selectedMonth
+          )
+        : sortedExpenses;
+
+    // Then apply pagination
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    return filtered.slice(startIndex, startIndex + rowsPerPage);
+  }, [sortedExpenses, selectedMonth, currentPage, rowsPerPage]);
+
+  // Calculate total pages
+  const totalExpenses = useMemo(
+    () =>
+      selectedMonth && selectedMonth !== "all"
+        ? sortedExpenses.filter(
+            (expense) => expense.expense_reporting_month === selectedMonth
+          ).length
+        : sortedExpenses.length,
+    [sortedExpenses, selectedMonth]
+  );
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(totalExpenses / rowsPerPage)),
+    [totalExpenses, rowsPerPage]
+  );
+
+  // Add a function to handle page changes and ensure they're valid
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // Effect to reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, rowsPerPage]);
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -560,71 +622,167 @@ export default function AdminPage() {
 
       {/* Expenses Table */}
       <CardWrapper title="Gastos registrados">
-        <div className="p-4">
+        <div className="p-4 space-y-4">
+          {/* Month filter */}
+          {!isLoadingExpenses && allExpenses.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <label htmlFor="month-filter" className="text-sm font-medium">
+                Filtrar por mes:
+              </label>
+              <Select
+                value={selectedMonth || "all"}
+                onValueChange={(value) => setSelectedMonth(value)}
+              >
+                <SelectTrigger id="month-filter" className="w-[200px]">
+                  <SelectValue placeholder="Todos los meses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los meses</SelectItem>
+                  {availableMonths.map((month) => (
+                    <SelectItem key={month} value={month}>
+                      {formatMonth(month)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {isLoadingExpenses ? (
             <div className="text-center py-8">Cargando gastos...</div>
           ) : allExpenses.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No hay gastos registrados para este edificio.
             </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => requestSort("provider_name")}
-                    >
-                      Proveedor {getSortDirectionIcon("provider_name")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => requestSort("provider_category")}
-                    >
-                      Categoría {getSortDirectionIcon("provider_category")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => requestSort("amount")}
-                    >
-                      Monto {getSortDirectionIcon("amount")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => requestSort("expense_reporting_month")}
-                    >
-                      Mes que reporta{" "}
-                      {getSortDirectionIcon("expense_reporting_month")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => requestSort("description")}
-                    >
-                      Descripción {getSortDirectionIcon("description")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedExpenses.map((expense) => (
-                    <TableRow key={expense.id}>
-                      <TableCell className="font-medium">
-                        {formatUppercase(expense.provider_name || "General")}
-                      </TableCell>
-                      <TableCell>{expense.provider_category}</TableCell>
-                      <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                      <TableCell>
-                        {formatMonth(expense.expense_reporting_month)}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {expense.description || "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          ) : totalExpenses === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No hay gastos para el mes seleccionado.
             </div>
+          ) : (
+            <>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => requestSort("provider_name")}
+                      >
+                        <div className="flex items-center">
+                          Proveedor {getSortDirectionIcon("provider_name")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => requestSort("provider_category")}
+                      >
+                        <div className="flex items-center">
+                          Categoría {getSortDirectionIcon("provider_category")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => requestSort("amount")}
+                      >
+                        <div className="flex items-center">
+                          Monto {getSortDirectionIcon("amount")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => requestSort("expense_reporting_month")}
+                      >
+                        <div className="flex items-center">
+                          Mes que reporta{" "}
+                          {getSortDirectionIcon("expense_reporting_month")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => requestSort("description")}
+                      >
+                        <div className="flex items-center">
+                          Descripción {getSortDirectionIcon("description")}
+                        </div>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAndPaginatedExpenses.map((expense, index) => (
+                      <TableRow
+                        key={expense.id}
+                        className={`${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        } hover:bg-primary/10 transition-colors`}
+                      >
+                        <TableCell className="font-medium">
+                          {formatUppercase(expense.provider_name || "General")}
+                        </TableCell>
+                        <TableCell>{expense.provider_category}</TableCell>
+                        <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                        <TableCell>
+                          {formatMonth(expense.expense_reporting_month)}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {expense.description || "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">
+                    Filas por página:
+                  </span>
+                  <Select
+                    value={rowsPerPage.toString()}
+                    onValueChange={(value) => setRowsPerPage(Number(value))}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue placeholder={rowsPerPage.toString()} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[5, 10, 20, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end space-x-2">
+                  <div className="text-sm text-gray-500 whitespace-nowrap mr-2">
+                    {totalExpenses} gastos en total | Página {currentPage} de{" "}
+                    {totalPages}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="h-8 px-3"
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="h-8 px-3"
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
+
           <div className="flex justify-end mt-4">
             <Button
               type="button"

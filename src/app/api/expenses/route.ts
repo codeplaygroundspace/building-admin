@@ -1,31 +1,14 @@
 import { NextResponse } from "next/server";
 import dayjs from "dayjs";
 import { supabase } from "../../../lib/supabase/supabaseClient";
+import { Expense } from "@/types/expense";
+import { Building } from "@/types/building";
 
-// Define interfaces for the data types
-interface Expense {
-  id: string;
-  amount: number;
-  description: string;
-  created_at: string;
-  date_from?: string;
-  date_to?: string;
-  expense_reporting_month: string;
-  building_id: string;
-  provider_id?: string;
-  provider_name?: string; // Add provider name
-  provider_category?: string; // Add provider category
-}
-
-interface Building {
-  id: string;
-  address: string;
-}
-
+// Provider-related interfaces (consider moving these to types/provider.ts)
 interface Provider {
   id: string;
   name: string;
-  provider_category_id: string; // Changed to match database schema
+  provider_category_id: string;
 }
 
 interface ProviderCategory {
@@ -33,20 +16,7 @@ interface ProviderCategory {
   name: string;
 }
 
-interface TransformedExpense {
-  id: string;
-  amount: number;
-  provider_name: string;
-  created_at: string;
-  description: string;
-  building_id: string;
-  building_address: string;
-  provider_id?: string;
-  provider_category: string;
-  date_from?: string;
-  date_to?: string;
-  expense_reporting_month: string;
-}
+// The Expense interface from @/types/expense already includes all these fields
 
 interface BuildingMap {
   [key: string]: string;
@@ -73,7 +43,7 @@ export async function GET(request: Request) {
       let query = supabase
         .from("expenses")
         .select(
-          "id, amount, description, created_at, date_from, date_to, expense_reporting_month, building_id, provider_id"
+          "id, amount, description, created_at, expense_reporting_month, building_id, provider_id"
         );
 
       // If building ID is provided, filter by it
@@ -81,7 +51,7 @@ export async function GET(request: Request) {
         query = query.eq("building_id", buildingId);
       }
 
-      // Filter by month if provided - prioritize date_from/date_to over created_at
+      // Filter by month if provided
       if (month) {
         const selectedMonthDate = dayjs(`${month}-01`);
         let targetMonth;
@@ -92,13 +62,8 @@ export async function GET(request: Request) {
           targetMonth = selectedMonthDate;
         }
 
-        const startDate = targetMonth.startOf("month").format("YYYY-MM-DD");
-        const endDate = targetMonth.endOf("month").format("YYYY-MM-DD");
-
-        // Try to filter by date range fields if they exist
-        query = query.or(
-          `date_from.gte.${startDate},date_to.lte.${endDate},and(date_from.lte.${startDate},date_to.gte.${endDate}),created_at.gte.${startDate},created_at.lte.${endDate}`
-        );
+        const monthStr = targetMonth.format("MMMM YYYY");
+        query = query.eq("expense_reporting_month", monthStr);
       }
 
       const { data: directData, error: directError } = await query;
@@ -174,7 +139,7 @@ export async function GET(request: Request) {
         }, {});
 
         // First transformation
-        const expenses: TransformedExpense[] = directData.map((expense) => {
+        const expenses: Expense[] = directData.map((expense) => {
           const provider = expense.provider_id
             ? providerMap[expense.provider_id]
             : null;
@@ -196,8 +161,6 @@ export async function GET(request: Request) {
               buildingMap[expense.building_id] || "Unknown Building",
             provider_id: expense.provider_id,
             provider_category: providerCategory,
-            date_from: expense.date_from,
-            date_to: expense.date_to,
             expense_reporting_month: expense.expense_reporting_month,
           };
         });
@@ -211,7 +174,7 @@ export async function GET(request: Request) {
 
     // Fallback: Use simpler SQL approach without JOIN to avoid RLS issues
     let sqlQuery = `
-      SELECT e.id, e.amount, e.description, e.created_at, e.date_from, e.date_to, e.expense_reporting_month,
+      SELECT e.id, e.amount, e.description, e.created_at, e.expense_reporting_month,
              e.building_id, e.provider_id, p.name as provider_name, pc.name as provider_category
       FROM expenses e
       LEFT JOIN providers p ON e.provider_id = p.id
@@ -232,16 +195,8 @@ export async function GET(request: Request) {
         targetMonth = dayjs(`${month}-01`);
       }
 
-      const startDate = targetMonth.startOf("month").format("YYYY-MM-DD");
-      const endDate = targetMonth.endOf("month").format("YYYY-MM-DD");
-
-      // Query for expenses that fall within the month by date_from/date_to or created_at
-      sqlQuery += ` AND (
-        (e.date_from >= '${startDate}' AND e.date_from <= '${endDate}') OR
-        (e.date_to >= '${startDate}' AND e.date_to <= '${endDate}') OR
-        (e.date_from <= '${startDate}' AND e.date_to >= '${endDate}') OR
-        (e.created_at >= '${startDate}' AND e.created_at <= '${endDate}')
-      )`;
+      const monthStr = targetMonth.format("MMMM YYYY");
+      sqlQuery += ` AND e.expense_reporting_month = '${monthStr}'`;
     }
 
     console.log("Executing SQL query:", sqlQuery);
@@ -279,37 +234,10 @@ export async function GET(request: Request) {
             targetMonth = dayjs(`${month}-01`);
           }
 
-          const startDate = targetMonth.startOf("month").toISOString();
-          const endDate = targetMonth.endOf("month").toISOString();
-
-          // Filter by date_from/date_to or created_at
-          filteredData = filteredData.filter((exp) => {
-            // Parse dates
-            const dateFrom = exp.date_from ? dayjs(exp.date_from) : null;
-            const dateTo = exp.date_to ? dayjs(exp.date_to) : null;
-            const createdAt = dayjs(exp.created_at);
-
-            // Check if any of the date conditions match
-            const startDateObj = dayjs(startDate);
-            const endDateObj = dayjs(endDate);
-
-            // Expense spans the target month
-            if (dateFrom && dateTo) {
-              if (
-                (dateFrom.isAfter(startDateObj) &&
-                  dateFrom.isBefore(endDateObj)) || // date_from in range
-                (dateTo.isAfter(startDateObj) && dateTo.isBefore(endDateObj)) || // date_to in range
-                (dateFrom.isBefore(startDateObj) && dateTo.isAfter(endDateObj)) // spans entire range
-              ) {
-                return true;
-              }
-            }
-
-            // Fallback to created_at
-            return (
-              createdAt.isAfter(startDateObj) && createdAt.isBefore(endDateObj)
-            );
-          });
+          const monthStr = targetMonth.format("MMMM YYYY");
+          filteredData = filteredData.filter(
+            (exp) => exp.expense_reporting_month === monthStr
+          );
         }
 
         // Get providers with their provider_category_id
@@ -378,8 +306,6 @@ export async function GET(request: Request) {
             building_address: "Building Address", // Placeholder
             provider_id: exp.provider_id,
             provider_category: providerCategory,
-            date_from: exp.date_from,
-            date_to: exp.date_to,
             expense_reporting_month: exp.expense_reporting_month,
           };
         });
@@ -413,7 +339,7 @@ export async function GET(request: Request) {
     );
 
     // SQL query transformation
-    const expenses: TransformedExpense[] = (data || []).map((row: Expense) => {
+    const expenses: Expense[] = (data || []).map((row: Expense) => {
       return {
         id: row.id,
         amount: row.amount,
@@ -424,8 +350,6 @@ export async function GET(request: Request) {
         building_address: buildingMap[row.building_id] || "Ejido 123333",
         provider_id: row.provider_id,
         provider_category: row.provider_category || "General",
-        date_from: row.date_from,
-        date_to: row.date_to,
         expense_reporting_month: row.expense_reporting_month,
       };
     });
