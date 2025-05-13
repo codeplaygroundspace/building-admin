@@ -29,7 +29,7 @@ export default function MainMenu() {
     { icon: Receipt, name: "Gastos comunes", href: "/gcomunes" },
     { icon: PiggyBank, name: "Fondo de reserva", href: "/fondo" },
     { icon: Info, name: "Informacion", href: "/info" },
-    { icon: Settings, name: "Admin", href: "/admin" },
+    { icon: Settings, name: "Admin: Gastos", href: "/admin" },
   ];
 
   // Close the mobile menu when path changes
