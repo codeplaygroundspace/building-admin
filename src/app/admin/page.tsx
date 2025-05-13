@@ -96,7 +96,7 @@ export default function AdminPage() {
 
     if (!building?.id) {
       toast({
-        title: "Error",
+        title: "Hay un error 🥴",
         description: "No building selected",
       });
       return;
@@ -108,8 +108,8 @@ export default function AdminPage() {
       !expense.expense_reporting_month
     ) {
       toast({
-        title: "Error",
-        description: "Por favor completa todos los cambios requeridos",
+        title: "Hay un error 🥴",
+        description: "Debes completar todos los datos requeridos",
       });
       return;
     }
@@ -118,7 +118,7 @@ export default function AdminPage() {
     const dateRegex = /^\d{4}-\d{2}$/;
     if (!dateRegex.test(expense.expense_reporting_month)) {
       toast({
-        title: "Error",
+        title: "Hay un error 🥴",
         description: "El formato debe ser YYYY-MM",
       });
       return;
@@ -162,7 +162,7 @@ export default function AdminPage() {
       });
 
       toast({
-        title: "Listo!",
+        title: "Listo ✅",
         description: "Gasto agregado correctamente",
       });
     } catch (error) {
@@ -191,13 +191,11 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Gastos</h1>
-
       <CardWrapper title="Agregar nuevo gasto">
         <form onSubmit={handleSubmit} className="space-y-6 p-4">
           <div className="flex flex-col space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="provider_id">Proveedor (requerido)</Label>
+              <Label htmlFor="provider_id">Proveedor:</Label>
               <Select
                 value={expense.provider_id}
                 onValueChange={handleProviderChange}
@@ -232,7 +230,7 @@ export default function AdminPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="amount">Monto (requerido)</Label>
+              <Label htmlFor="amount">Monto:</Label>
               <Input
                 id="amount"
                 name="amount"
@@ -247,7 +245,7 @@ export default function AdminPage() {
 
             <div className="space-y-2">
               <Label htmlFor="expense_reporting_month">
-                Mes al que reporta (YYYY-MM) (requerido)
+                Mes al que reporta (YYYY-MM):
               </Label>
               <Input
                 id="expense_reporting_month"
@@ -260,7 +258,9 @@ export default function AdminPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Descripcion de gasto</Label>
+              <Label htmlFor="description">
+                Descripcion de gasto (opcional):
+              </Label>
               <Textarea
                 id="description"
                 name="description"
@@ -276,7 +276,7 @@ export default function AdminPage() {
             <Button
               type="submit"
               disabled={isSubmitting || isLoadingProviders}
-              className="w-full"
+              className="w-full bg-black hover:bg-gray-800"
             >
               {isSubmitting ? "Agregando gasto..." : "Agregar gasto"}
             </Button>
