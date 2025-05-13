@@ -72,7 +72,7 @@ export default function ExpenseListItem({
     <li className="flex justify-between items-start">
       <div className="flex items-start gap-2 pr-4">
         <div
-          className="h-16 w-14 rounded-lg flex items-center justify-center bg-black self-stretch"
+          className="h-8 w-8 rounded-md flex items-center justify-center bg-black self-stretch"
           aria-hidden="true"
         >
           <span className="text-white text-2xl font-bold">
