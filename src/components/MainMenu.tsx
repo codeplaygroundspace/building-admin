@@ -9,6 +9,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Receipt as ReceiptIcon,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +19,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import React from "react";
 
 export default function MainMenu() {
   const pathname = usePathname();
@@ -27,9 +30,14 @@ export default function MainMenu() {
   const navLinks = [
     { icon: House, name: "Apartamentos", href: "/" },
     { icon: Receipt, name: "Gastos comunes", href: "/gcomunes" },
+    { icon: ReceiptIcon, name: "Gastos puntuales", href: "/gpuntuales" },
+    { icon: Calendar, name: "Eventos", href: "/eventos" },
     { icon: PiggyBank, name: "Fondo de reserva", href: "/fondo" },
     { icon: Info, name: "Informacion", href: "/info" },
-    { icon: Settings, name: "Admin: Gastos", href: "/admin" },
+    { icon: Settings, name: "A: Gastos comunes", href: "/admin" },
+    { icon: Settings, name: "A: Gastos puntuales", href: "/admin/gpuntuales" },
+    { icon: Settings, name: "A: Fondo de reserva", href: "/admin/fondo" },
+    { icon: Settings, name: "A: Pagos", href: "/pagos" },
   ];
 
   // Close the mobile menu when path changes
@@ -108,25 +116,33 @@ export default function MainMenu() {
               <div className="space-y-1">
                 {navLinks.map((item) => {
                   const isActive = pathname === item.href;
+                  const isLastInfo = item.name === "Informacion";
                   return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      scroll={false}
-                      title={isDesktopMenuCollapsed ? item.name : undefined}
-                      className={cn(
-                        "flex items-center rounded-md py-2 text-sm font-medium transition-colors",
-                        isDesktopMenuCollapsed
-                          ? "justify-center px-0"
-                          : "px-3 gap-3",
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    <React.Fragment key={item.name}>
+                      <Link
+                        href={item.href}
+                        scroll={false}
+                        title={isDesktopMenuCollapsed ? item.name : undefined}
+                        className={cn(
+                          "flex items-center rounded-md py-2 text-sm font-medium transition-colors",
+                          isDesktopMenuCollapsed
+                            ? "justify-center px-0"
+                            : "px-3 gap-3",
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {!isDesktopMenuCollapsed && <span>{item.name}</span>}
+                      </Link>
+                      {isLastInfo && (
+                        <hr
+                          className="my-3 border-t border-gray-300 dark:border-gray-700"
+                          aria-label="Admin section separator"
+                        />
                       )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {!isDesktopMenuCollapsed && <span>{item.name}</span>}
-                    </Link>
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -175,22 +191,30 @@ export default function MainMenu() {
                 <div className="space-y-1">
                   {navLinks.map((item) => {
                     const isActive = pathname === item.href;
+                    const isLastInfo = item.name === "Informacion";
                     return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        scroll={false}
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-primary/10 text-primary"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                      <React.Fragment key={item.name}>
+                        <Link
+                          href={item.href}
+                          scroll={false}
+                          className={cn(
+                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                            isActive
+                              ? "bg-primary/10 text-primary"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                          )}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          <span>{item.name}</span>
+                        </Link>
+                        {isLastInfo && (
+                          <hr
+                            className="my-3 border-t border-gray-300 dark:border-gray-700"
+                            aria-label="Admin section separator"
+                          />
                         )}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.name}</span>
-                      </Link>
+                      </React.Fragment>
                     );
                   })}
                 </div>
