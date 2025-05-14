@@ -10,7 +10,12 @@ export default function HeaderWrapper() {
   const pathname = usePathname();
 
   // Hide header on info and admin pages
-  if (pathname === "/info" || pathname === "/admin") {
+  if (
+    pathname === "/info" ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/pagos"
+  ) {
     return null;
   }
 
