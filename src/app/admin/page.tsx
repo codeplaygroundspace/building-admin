@@ -26,44 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Define provider interface
-interface Provider {
-  id: string;
-  name: string;
-  category_id: string;
-  category_name: string;
-}
-
-// Define expense interface
-interface ExpenseItem {
-  id: string;
-  description: string;
-  amount: string;
-  provider_id: string;
-  provider_name: string;
-  provider_category: string;
-  expense_reporting_month: string;
-}
-
-// Define the fetched expense interface from the API
-interface FetchedExpense {
-  id: string;
-  amount: number;
-  provider_name: string;
-  created_at: string;
-  description: string;
-  building_id: string;
-  provider_id?: string;
-  provider_category: string;
-  expense_reporting_month: string;
-}
-
-// Define sort configuration type
-type SortConfig = {
-  key: keyof FetchedExpense | null;
-  direction: "ascending" | "descending";
-};
+import {
+  Provider,
+  ExpenseItem,
+  FetchedExpense,
+  SortConfig,
+} from "@/types/expense";
 
 export default function AdminPage() {
   const { building } = useBuilding();
@@ -73,7 +41,7 @@ export default function AdminPage() {
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [allExpenses, setAllExpenses] = useState<FetchedExpense[]>([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
+  const [sortConfig, setSortConfig] = useState<SortConfig<FetchedExpense>>({
     key: null,
     direction: "ascending",
   });
@@ -413,14 +381,18 @@ export default function AdminPage() {
   };
 
   // Group providers by category for better organization
-  const providersByCategory = providers.reduce((acc, provider) => {
-    const category = provider.category_name || "Uncategorized";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(provider);
-    return acc;
-  }, {} as Record<string, Provider[]>);
+  const providersByCategory = useMemo(
+    () =>
+      providers.reduce((acc, provider) => {
+        const category = provider.category_name || "Uncategorized";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(provider);
+        return acc;
+      }, {} as Record<string, Provider[]>),
+    [providers]
+  );
 
   // Check if we can add more expenses (max 8)
   const canAddMoreExpenses = expenses.length < 8;
@@ -539,12 +511,15 @@ export default function AdminPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(providersByCategory).map(
-                          ([category, categoryProviders]) => (
+                          ([category, categoryProviders]: [
+                            string,
+                            Provider[]
+                          ]) => (
                             <div key={category}>
                               <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">
                                 {category}
                               </div>
-                              {categoryProviders.map((provider) => (
+                              {categoryProviders.map((provider: Provider) => (
                                 <SelectItem
                                   key={provider.id}
                                   value={provider.id}
