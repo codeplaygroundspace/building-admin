@@ -27,8 +27,11 @@ import {
 import { Provider } from "@/types/expense";
 import { ProjectItem, FetchedProject, SortConfig } from "@/types/project";
 import { useProjects, useAddBulkProjects } from "@/lib/tanstack/projects";
+import { getBaseUrl } from "@/lib/utils";
+import { useBuilding } from "@/contexts/building-context";
 
 export default function AdminGastosPuntualesPage() {
+  const { building } = useBuilding();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
@@ -76,7 +79,8 @@ export default function AdminGastosPuntualesPage() {
     const fetchProviders = async () => {
       try {
         setIsLoadingProviders(true);
-        const response = await fetch("/api/providers");
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/api/providers`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch providers");
@@ -170,6 +174,16 @@ export default function AdminGastosPuntualesPage() {
       return;
     }
 
+    // Validate that building is selected
+    if (!building?.id) {
+      toast({
+        title: "Hay un error 🥴",
+        description:
+          "Debes seleccionar un edificio para agregar gastos puntuales",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -179,6 +193,7 @@ export default function AdminGastosPuntualesPage() {
         cost: parseFloat(project.cost),
         status: project.status,
         provider_id: project.provider_id,
+        building_id: building.id, // Add building_id to each project
       }));
 
       console.log("Sending data to API:", projectsData);
@@ -302,6 +317,85 @@ export default function AdminGastosPuntualesPage() {
   // Handle page change
   const handlePageChange = (newPage: number) => {
     setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
+  };
+
+  // Debug routes
+  const handleDebugClick = async () => {
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/projects/debug`);
+      const data = await response.json();
+      console.log("Debug data:", data);
+      toast({
+        title: "Debug info",
+        description: "Check console for debug data",
+      });
+    } catch (error) {
+      console.error("Debug error:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch debug info",
+      });
+    }
+  };
+
+  const handleSeedClick = async () => {
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/projects/seed`);
+      const data = await response.json();
+      console.log("Seed data:", data);
+      toast({
+        title: "Seed initiated",
+        description: `Created ${
+          data.projects?.length || 0
+        } projects for debugging`,
+      });
+    } catch (error) {
+      console.error("Seed error:", error);
+      toast({
+        title: "Error",
+        description: "Could not seed test data",
+      });
+    }
+  };
+
+  const handleSimpleClick = async () => {
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/projects/simple`);
+      const data = await response.json();
+      console.log("Simple data:", data);
+      toast({
+        title: "Simple API data",
+        description: "Check console for simple data",
+      });
+    } catch (error) {
+      console.error("Error with simple API call:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch simple data",
+      });
+    }
+  };
+
+  const handleSupabaseInfoClick = async () => {
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/supabase-info`);
+      const data = await response.json();
+      console.log("Supabase info:", data);
+      toast({
+        title: "Supabase info",
+        description: "Check console for Supabase configuration",
+      });
+    } catch (error) {
+      console.error("Error fetching Supabase info:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch Supabase info",
+      });
+    }
   };
 
   return (
@@ -508,12 +602,15 @@ export default function AdminGastosPuntualesPage() {
                           Descripción {getSortDirectionIcon("description")}
                         </div>
                       </TableHead>
+                      <TableHead className="cursor-pointer hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center">Edificio</div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoadingProjects && paginatedProjects.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={6} className="h-24 text-center">
                           <div className="flex justify-center items-center">
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             <span>Cargando datos...</span>
@@ -522,7 +619,7 @@ export default function AdminGastosPuntualesPage() {
                       </TableRow>
                     ) : paginatedProjects.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={6} className="h-24 text-center">
                           No se encontraron resultados para la página actual.
                         </TableCell>
                       </TableRow>
@@ -554,6 +651,11 @@ export default function AdminGastosPuntualesPage() {
                           </TableCell>
                           <TableCell className="max-w-xs truncate">
                             {project.description || "-"}
+                          </TableCell>
+                          <TableCell>
+                            {project.building_address ||
+                              project.building_id ||
+                              "-"}
                           </TableCell>
                         </TableRow>
                       ))
@@ -620,92 +722,26 @@ export default function AdminGastosPuntualesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch("/api/projects/debug");
-                        const data = await response.json();
-                        console.log("Debug response:", data);
-                        toast({
-                          title:
-                            data.status === "success"
-                              ? "Debug Exitoso"
-                              : "Error de Debug",
-                          description: `Conteo de proyectos: ${data.projectCount}`,
-                        });
-                      } catch (error) {
-                        console.error("Debug error:", error);
-                        toast({
-                          title: "Error",
-                          description: "Error al ejecutar diagnóstico",
-                        });
-                      }
-                    }}
+                    onClick={handleDebugClick}
                   >
                     Diagnosticar
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch("/api/projects/seed");
-                        const data = await response.json();
-                        console.log("Seed response:", data);
-                        toast({
-                          title:
-                            data.status === "success"
-                              ? "Seed Exitoso"
-                              : "Error de Seed",
-                          description: data.message,
-                        });
-
-                        if (data.status === "success") {
-                          // Refetch projects after successful seeding
-                          setTimeout(() => window.location.reload(), 1000);
-                        }
-                      } catch (error) {
-                        console.error("Seed error:", error);
-                        toast({
-                          title: "Error",
-                          description: "Error al insertar datos de ejemplo",
-                        });
-                      }
-                    }}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleSeedClick}>
                     Insertar Ejemplo
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch(
-                          "/api/projects/seed-direct"
-                        );
-                        const data = await response.json();
-                        console.log("Direct SQL seed response:", data);
-                        toast({
-                          title:
-                            data.status === "success"
-                              ? "SQL Seed Exitoso"
-                              : "Error de SQL Seed",
-                          description: data.message,
-                        });
-
-                        if (data.status === "success") {
-                          // Refetch projects after successful seeding
-                          setTimeout(() => window.location.reload(), 1000);
-                        }
-                      } catch (error) {
-                        console.error("Direct SQL seed error:", error);
-                        toast({
-                          title: "Error",
-                          description: "Error al ejecutar SQL directo",
-                        });
-                      }
-                    }}
+                    onClick={handleSimpleClick}
                   >
-                    SQL Directo
+                    API Simple
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSupabaseInfoClick}
+                  >
+                    Info Supabase
                   </Button>
                   <Button
                     variant="outline"
@@ -734,67 +770,6 @@ export default function AdminGastosPuntualesPage() {
                     página actual
                   </div>
                   <div>Intenta usar los botones de arriba si no ves datos</div>
-                </div>
-
-                <div className="mt-4 space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch("/api/projects/simple");
-                        const data = await response.json();
-                        console.log("Simple API response:", data);
-                        toast({
-                          title:
-                            data.projects && data.projects.length > 0
-                              ? "Datos Encontrados"
-                              : "Sin Datos",
-                          description:
-                            data.projects && data.projects.length > 0
-                              ? `Se encontraron ${data.projects.length} proyectos`
-                              : data.error || "No se encontraron proyectos",
-                        });
-
-                        if (data.projects && data.projects.length > 0) {
-                          // Force a refresh to use new data
-                          window.location.reload();
-                        }
-                      } catch (error) {
-                        console.error("Simple API error:", error);
-                        toast({
-                          title: "Error",
-                          description: "Error al consultar API simple",
-                        });
-                      }
-                    }}
-                  >
-                    API Simple
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch("/api/supabase-info");
-                        const data = await response.json();
-                        console.log("Supabase info:", data);
-                        toast({
-                          title: "Conexión Supabase",
-                          description: `URL: ${data.connection_details.url}, Key: ${data.connection_details.key_status}`,
-                        });
-                      } catch (error) {
-                        console.error("Supabase info error:", error);
-                        toast({
-                          title: "Error",
-                          description: "Error al verificar conexión",
-                        });
-                      }
-                    }}
-                  >
-                    Info Supabase
-                  </Button>
                 </div>
               </div>
             </>

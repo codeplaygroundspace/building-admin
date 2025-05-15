@@ -2,14 +2,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectKeys } from "./query-keys";
 import { FetchedProject, ProjectItem } from "@/types/project";
 import { toast } from "@/components/ui/use-toast";
+import { getBaseUrl } from "@/lib/utils";
 
 // Fetch all projects
 export function useProjects() {
+  const baseUrl = getBaseUrl();
+
   return useQuery({
     queryKey: projectKeys.lists(),
     queryFn: async () => {
       console.log("Fetching projects...");
-      const response = await fetch(`/api/projects`);
+      const response = await fetch(`${baseUrl}/api/projects`);
       console.log("API Response status:", response.status);
 
       if (!response.ok) {
@@ -53,11 +56,12 @@ export function useProjects() {
 // Fetch a single project by ID
 export function useProject(id: string) {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   return useQuery({
     queryKey: projectKeys.detail(id),
     queryFn: async () => {
-      const response = await fetch(`/api/projects/${id}`);
+      const response = await fetch(`${baseUrl}/api/projects/${id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch project");
       }
@@ -85,12 +89,13 @@ export function useProject(id: string) {
 // Add a single project
 export function useAddProject() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   return useMutation({
     mutationFn: async (
       project: Omit<ProjectItem, "id" | "provider_name" | "provider_category">
     ) => {
-      const response = await fetch("/api/projects/add", {
+      const response = await fetch(`${baseUrl}/api/projects/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -129,19 +134,21 @@ export function useAddProject() {
 // Add multiple projects
 export function useAddBulkProjects() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   interface ProjectSubmission {
     description: string | null;
     cost: number;
     status: boolean | undefined;
     provider_id: string;
+    building_id?: string;
   }
 
   return useMutation({
     mutationFn: async (projects: ProjectSubmission[]) => {
       console.log("Mutation called with:", projects);
 
-      const response = await fetch("/api/projects/add-bulk", {
+      const response = await fetch(`${baseUrl}/api/projects/add-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -185,10 +192,11 @@ export function useAddBulkProjects() {
 // Update a project
 export function useUpdateProject() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   return useMutation({
     mutationFn: async (project: Partial<ProjectItem> & { id: string }) => {
-      const response = await fetch(`/api/projects/${project.id}`, {
+      const response = await fetch(`${baseUrl}/api/projects/${project.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -228,10 +236,11 @@ export function useUpdateProject() {
 // Delete a project
 export function useDeleteProject() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   return useMutation({
     mutationFn: async (projectId: string) => {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
         method: "DELETE",
       });
 

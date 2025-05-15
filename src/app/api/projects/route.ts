@@ -11,6 +11,7 @@ interface ProjectRecord {
   status: boolean | null;
   created_at: string | null;
   provider_id: string | null;
+  building_id: string | null;
 }
 
 // Define provider interface
@@ -24,6 +25,12 @@ interface ProviderRecord {
 interface CategoryRecord {
   id: string;
   name: string;
+}
+
+// Define building interface
+interface BuildingRecord {
+  id: string;
+  address: string;
 }
 
 export async function GET(request: Request) {
@@ -51,10 +58,14 @@ export async function GET(request: Request) {
     // Standard query attempt
     const query = supabase
       .from("projects")
-      .select("id, cost, description, status, created_at, provider_id");
+      .select(
+        "id, cost, description, status, created_at, provider_id, building_id"
+      );
 
-    // If building ID is provided, filter by it in the future when the column is added
-    // For now, we fetch all projects since they don't have building_id
+    // If building ID is provided, filter by it
+    if (buildingId) {
+      query.eq("building_id", buildingId);
+    }
 
     const { data: projectsData, error: projectsError } = await query;
 
@@ -154,6 +165,35 @@ export async function GET(request: Request) {
       {}
     );
 
+    // Get building data
+    const buildingIds = [
+      ...new Set(
+        projectsData
+          .map((project) => project.building_id)
+          .filter((id) => id != null)
+      ),
+    ];
+
+    // Get buildings
+    const { data: buildings } = await supabase
+      .from("buildings")
+      .select("id, address")
+      .in(
+        "id",
+        buildingIds.length > 0
+          ? buildingIds
+          : ["00000000-0000-0000-0000-000000000000"]
+      );
+
+    // Create building map
+    const buildingMap: Record<string, string> = (buildings || []).reduce(
+      (map: Record<string, string>, building: BuildingRecord) => {
+        map[building.id] = building.address;
+        return map;
+      },
+      {}
+    );
+
     // Transform projects data with provider information
     const projects = projectsData.map((project: ProjectRecord) => {
       const provider = project.provider_id
@@ -173,6 +213,10 @@ export async function GET(request: Request) {
         provider_id: project.provider_id,
         provider_name: providerName,
         provider_category: providerCategory,
+        building_id: project.building_id,
+        building_address: project.building_id
+          ? buildingMap[project.building_id] || "Unknown Building"
+          : null,
       };
     });
 

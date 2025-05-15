@@ -42,6 +42,7 @@ export async function POST(request: Request) {
         cost: cost,
         status: project.status !== undefined ? project.status : true,
         provider_id: project.provider_id || null,
+        building_id: project.building_id || null,
       };
     });
 
