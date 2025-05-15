@@ -1,11 +1,35 @@
-import { useState, useEffect } from "react";
-import { DashboardData } from "@/types/expense";
-import { fetchExpenses } from "@/helpers/fetchExpenses";
-import { filterUniqueMonth } from "@/helpers/filterUniqueMonth";
+"use client";
+
+import { useAvailableMonths } from "./useAvailableMonths";
 import dayjs from "dayjs";
 
 // The useMonths custom hook fetches and processes a list of unique months from expense data
 // and makes it available to components. It returns an array of months and loading/error states.
+
+// Generate a list of months in Month YYYY format (like "January 2025") from YYYY-MM format (like "2025-01")
+const convertMonthsFormat = (months: string[]): string[] => {
+  return months.map((monthStr) => {
+    const [year, monthNum] = monthStr.split("-");
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    // Convert 1-based month number to array index (0-based)
+    const monthIndex = parseInt(monthNum) - 1;
+    return `${monthNames[monthIndex]} ${year}`;
+  });
+};
 
 // Generate a list of months including existing months and current month
 const getMonthOptions = (existingMonths: string[] = []): string[] => {
@@ -25,33 +49,18 @@ const getMonthOptions = (existingMonths: string[] = []): string[] => {
 };
 
 export const useMonths = () => {
-  const [months, setMonths] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Use the TanStack Query implementation
+  const { months: monthsInYYYYMM, isLoading, error } = useAvailableMonths();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch all expenses to determine available months
-        const data: DashboardData = await fetchExpenses();
+  // Convert months from YYYY-MM to Month YYYY format
+  const formattedMonths = convertMonthsFormat(monthsInYYYYMM);
 
-        // Extract unique months from expenses data
-        const expenseMonths = filterUniqueMonth(data.expenses);
+  // Add current month and sort
+  const allMonths = getMonthOptions(formattedMonths);
 
-        // Combine with existing months and current month
-        const allMonths = getMonthOptions(expenseMonths);
-        setMonths(allMonths);
-      } catch (err) {
-        console.error("Error fetching months:", err);
-        setError("Failed to load months. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { months, error, isLoading };
+  return {
+    months: allMonths,
+    error: error,
+    isLoading,
+  };
 };

@@ -9,14 +9,14 @@ import { useBuilding } from "@/contexts/building-context";
 import { useMonth } from "@/contexts/month-context";
 
 export default function ExpensesPage() {
-  const { selectedMonth, displayMonth } = useMonth();
+  const { selectedMonth } = useMonth();
   const { building } = useBuilding();
 
-  // Pass building ID to useExpenses hook
-  const { filteredExpenses, totalExpenses, loading, error } = useExpenses(
-    selectedMonth,
-    building?.id
-  );
+  // Use the backward-compatible properties
+  const { filteredExpenses, totalExpenses, loading, error } = useExpenses({
+    month: selectedMonth,
+    buildingId: building?.id,
+  });
 
   if (loading) {
     return (
@@ -34,12 +34,17 @@ export default function ExpensesPage() {
     );
   }
 
+  // Convert the selected month to a display format (previous month)
+  const displayText = selectedMonth
+    ? getPreviousMonthDisplayText(selectedMonth)
+    : null;
+
   return (
     <>
-      {displayMonth && (
+      {selectedMonth && displayText && (
         <ExpensesHeader
           selectedMonth={selectedMonth}
-          displayMonth={displayMonth}
+          displayMonth={displayText}
         />
       )}
       <div className="flex flex-col space-y-6">
@@ -52,4 +57,35 @@ export default function ExpensesPage() {
       </div>
     </>
   );
+}
+
+// Helper function to get the previous month display text in "Month YYYY" format
+function getPreviousMonthDisplayText(monthStr: string): string {
+  if (!monthStr) return "";
+
+  const [year, monthNum] = monthStr.split("-");
+  let prevMonthNum = parseInt(monthNum) - 1;
+  let prevYear = parseInt(year);
+
+  if (prevMonthNum === 0) {
+    prevMonthNum = 12;
+    prevYear -= 1;
+  }
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  return `${monthNames[prevMonthNum - 1]} ${prevYear}`;
 }
