@@ -8,17 +8,17 @@ import { calcTotalExpenses } from "@/helpers/calcTotalExpenses";
  * Hook to fetch expenses data with TanStack Query
  */
 export function useExpenses(options: FetchExpensesOptions = {}) {
-  const { data, isLoading, error } = useTanstackExpenses(options);
+  const { data = [], isLoading, error } = useTanstackExpenses(options);
 
   // Calculate total expenses for convenience
-  const totalExpenses = calcTotalExpenses({ expenses: data?.expenses || [] });
+  const totalExpenses = calcTotalExpenses({ expenses: data || [] });
 
   return {
-    data: data?.expenses || [],
+    data: data || [],
     isLoading,
     error: error ? (error as Error).message : null,
     // Keep compatibility with old code
-    filteredExpenses: data?.expenses || [],
+    filteredExpenses: data || [],
     totalExpenses,
     loading: isLoading,
   };

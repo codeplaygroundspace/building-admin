@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchExpenses, FetchExpensesOptions } from "@/helpers/fetchExpenses";
 import { expenseKeys } from "./query-keys";
 import { Expense } from "@/types/expense";
+import { toast } from "@/components/ui/use-toast";
 
 /**
  * Hook to fetch expenses based on provided filters
@@ -9,7 +10,10 @@ import { Expense } from "@/types/expense";
 export function useExpenses(options: FetchExpensesOptions = {}) {
   return useQuery({
     queryKey: expenseKeys.list(options),
-    queryFn: () => fetchExpenses(options),
+    queryFn: async () => {
+      const data = await fetchExpenses(options);
+      return data.expenses || [];
+    },
     placeholderData: (previousData) => previousData,
   });
 }
@@ -63,6 +67,63 @@ export function useAddExpense() {
       // Invalidate expenses queries to refetch data
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() });
       queryClient.invalidateQueries({ queryKey: expenseKeys.months() });
+    },
+  });
+}
+
+/**
+ * Hook to add multiple expenses in bulk
+ */
+export function useAddBulkExpenses() {
+  const queryClient = useQueryClient();
+
+  interface BulkExpenseItem {
+    description: string | null;
+    amount: number;
+    provider_id: string;
+    provider_name: string;
+    provider_category: string;
+    building_id: string;
+    expense_reporting_month: string;
+  }
+
+  return useMutation({
+    mutationFn: async (expenses: BulkExpenseItem[]) => {
+      console.log("Submitting bulk expenses:", expenses);
+
+      const response = await fetch("/api/expenses/add-bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ expenses }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add expenses");
+      }
+
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate expenses queries to refetch data
+      queryClient.invalidateQueries({ queryKey: expenseKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: expenseKeys.months() });
+
+      toast({
+        title: "Listo ✅",
+        description: `${variables.length} gastos agregados correctamente`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error adding expenses:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error al agregar gastos",
+      });
     },
   });
 }

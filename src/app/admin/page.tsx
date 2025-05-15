@@ -17,7 +17,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import dayjs from "dayjs";
 import { formatUppercase } from "@/helpers/formatters";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, X, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -32,6 +32,7 @@ import {
   FetchedExpense,
   SortConfig,
 } from "@/types/expense";
+import { useExpenses, useAddBulkExpenses } from "@/lib/tanstack/expenses";
 
 export default function AdminPage() {
   const { building } = useBuilding();
@@ -39,8 +40,6 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
-  const [allExpenses, setAllExpenses] = useState<FetchedExpense[]>([]);
-  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig<FetchedExpense>>({
     key: null,
     direction: "ascending",
@@ -49,6 +48,13 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // TanStack Query hooks
+  const { data: allExpenses = [], isLoading: isLoadingExpenses } = useExpenses({
+    buildingId: building?.id,
+  });
+
+  const addBulkExpenses = useAddBulkExpenses();
 
   // Function to get next stable ID
   const getNextStableId = useCallback(() => {
@@ -96,41 +102,6 @@ export default function AdminPage() {
 
     fetchProviders();
   }, []);
-
-  // Fetch expenses
-  const fetchExpenses = useCallback(async () => {
-    if (!building?.id) return;
-
-    try {
-      setIsLoadingExpenses(true);
-      const url = new URL("/api/expenses", window.location.origin);
-      url.searchParams.append("building_id", building.id);
-
-      const response = await fetch(url.toString());
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch expenses");
-      }
-
-      const data = await response.json();
-      setAllExpenses(data.expenses || []);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load expenses",
-      });
-    } finally {
-      setIsLoadingExpenses(false);
-    }
-  }, [building?.id]);
-
-  // Fetch expenses when the building changes or after a successful submission
-  useEffect(() => {
-    if (building?.id) {
-      fetchExpenses();
-    }
-  }, [building?.id, fetchExpenses]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -249,19 +220,8 @@ export default function AdminPage() {
         expense_reporting_month: exp.expense_reporting_month,
       }));
 
-      // Send the data to the API
-      const response = await fetch("/api/expenses/add-bulk", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ expenses: expensesData }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add expenses");
-      }
+      // Use TanStack mutation instead of fetch
+      await addBulkExpenses.mutateAsync(expensesData);
 
       // Reset the form with one empty expense
       setExpenses([
@@ -275,23 +235,9 @@ export default function AdminPage() {
           expense_reporting_month: reportingMonth,
         },
       ]);
-
-      toast({
-        title: "Listo ✅",
-        description: `${expensesData.length} gastos agregados correctamente`,
-      });
-
-      // Refresh expenses list after adding new ones
-      fetchExpenses();
     } catch (error) {
+      // Error is handled by the mutation
       console.error("Error al agregar gastos:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Un error desconocido ha ocurrido",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -582,14 +528,21 @@ export default function AdminPage() {
           <div className="flex w-full">
             <Button
               type="submit"
-              disabled={isSubmitting || isLoadingProviders}
+              disabled={
+                isSubmitting || isLoadingProviders || addBulkExpenses.isPending
+              }
               className="w-full bg-black hover:bg-gray-800"
             >
-              {isSubmitting
-                ? `Agregando ${expenses.length} gastos...`
-                : `Agregar ${expenses.length} gasto${
-                    expenses.length > 1 ? "s" : ""
-                  }`}
+              {isSubmitting || addBulkExpenses.isPending ? (
+                <span className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Agregando {expenses.length} gastos...
+                </span>
+              ) : (
+                `Agregar ${expenses.length} gasto${
+                  expenses.length > 1 ? "s" : ""
+                }`
+              )}
             </Button>
           </div>
         </form>
@@ -624,7 +577,10 @@ export default function AdminPage() {
           )}
 
           {isLoadingExpenses ? (
-            <div className="text-center py-8">Cargando gastos...</div>
+            <div className="text-center py-8 flex justify-center items-center">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <span>Cargando gastos...</span>
+            </div>
           ) : allExpenses.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No hay gastos registrados para este edificio.
@@ -757,17 +713,6 @@ export default function AdminPage() {
               </div>
             </>
           )}
-
-          <div className="flex justify-end mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={fetchExpenses}
-              disabled={isLoadingExpenses || !building?.id}
-            >
-              Actualizar lista
-            </Button>
-          </div>
         </div>
       </CardWrapper>
     </div>
