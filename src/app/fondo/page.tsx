@@ -11,11 +11,11 @@ export default function Savings() {
   const { selectedMonth } = useMonth();
   const { building } = useBuilding();
 
-  // Pass building ID to useExpenses hook
-  const { totalExpenses, loading, error } = useExpenses(
-    selectedMonth,
-    building?.id
-  );
+  // Use the options object format
+  const { totalExpenses, loading, error } = useExpenses({
+    month: selectedMonth,
+    buildingId: building?.id,
+  });
 
   if (loading) {
     return (

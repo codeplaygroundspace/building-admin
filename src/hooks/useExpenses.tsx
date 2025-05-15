@@ -1,68 +1,25 @@
-import { useState, useEffect } from "react";
-import { Expense, DashboardData } from "@/types/expense";
-import { fetchExpenses } from "../helpers/fetchExpenses";
-import { calcTotalExpenses } from "../helpers/calcTotalExpenses";
-import dayjs from "dayjs";
-import { useMonth } from "@/contexts/month-context";
+"use client";
 
-// Custom hook to fetch and filter expenses by selected month
-export const useExpenses = (
-  selectedMonth: string | null,
-  buildingId?: string
-) => {
-  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const { displayMonth } = useMonth();
+import { useExpenses as useTanstackExpenses } from "@/lib/tanstack/expenses";
+import { FetchExpensesOptions } from "@/helpers/fetchExpenses";
+import { calcTotalExpenses } from "@/helpers/calcTotalExpenses";
 
-  // Fetch expenses for the selected month
-  useEffect(() => {
-    if (selectedMonth && displayMonth) {
-      const fetchMonthData = async () => {
-        try {
-          setLoading(true);
+/**
+ * Hook to fetch expenses data with TanStack Query
+ */
+export function useExpenses(options: FetchExpensesOptions = {}) {
+  const { data, isLoading, error } = useTanstackExpenses(options);
 
-          // Fetch all expenses for this building
-          const data: DashboardData = await fetchExpenses({
-            buildingId,
-          });
-
-          // Convert displayMonth from "Month YYYY" to "YYYY-MM" format for comparison
-          const displayMonthDate = dayjs(displayMonth, "MMMM YYYY");
-          const formattedDisplayMonth = displayMonthDate.format("YYYY-MM");
-
-          // Filter expenses by display month using expense_reporting_month field
-          const filteredByMonth = data.expenses.filter(
-            (expense) =>
-              expense.expense_reporting_month === formattedDisplayMonth
-          );
-
-          console.log(
-            `Filtered ${data.expenses.length} expenses to ${filteredByMonth.length} for month ${displayMonth} (${formattedDisplayMonth})`
-          );
-
-          setFilteredExpenses(filteredByMonth);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Unknown error occurred"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchMonthData();
-    } else {
-      setFilteredExpenses([]);
-    }
-  }, [selectedMonth, buildingId, displayMonth]);
-
-  const totalExpenses = calcTotalExpenses({ expenses: filteredExpenses });
+  // Calculate total expenses for convenience
+  const totalExpenses = calcTotalExpenses({ expenses: data?.expenses || [] });
 
   return {
-    filteredExpenses,
+    data: data?.expenses || [],
+    isLoading,
+    error: error ? (error as Error).message : null,
+    // Keep compatibility with old code
+    filteredExpenses: data?.expenses || [],
     totalExpenses,
-    loading,
-    error,
+    loading: isLoading,
   };
-};
+}

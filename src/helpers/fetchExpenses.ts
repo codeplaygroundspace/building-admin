@@ -56,8 +56,8 @@ const fallbackData: DashboardData = {
   ],
 };
 
-interface FetchExpensesOptions {
-  month?: string;
+export interface FetchExpensesOptions {
+  month?: string | null;
   buildingId?: string;
   forDropdown?: boolean;
 }
