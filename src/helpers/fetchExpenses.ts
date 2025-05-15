@@ -2,10 +2,9 @@
  * Expense Data Fetching Module
  *
  * This module provides functions for fetching expense data from the API with
- * various filtering options, caching, and error handling.
+ * various filtering options and error handling.
  *
  * Key features:
- * - Client-side caching to reduce redundant API calls
  * - Support for filtering by month, building, or both
  * - Optional inclusion of previous month's data for comparison
  * - Detailed console logging for debugging
@@ -16,7 +15,7 @@
  *
  * Usage examples:
  *
- * // Fetch all expenses (with caching)
+ * // Fetch all expenses
  * const data = await fetchExpenses();
  *
  * // Fetch expenses for a specific month
@@ -34,9 +33,6 @@
 
 import { DashboardData } from "@/types/expense";
 
-let cachedExpenses: DashboardData | null = null;
-let cachedMonth: string | null = null;
-
 export interface FetchExpensesOptions {
   month?: string | null;
   buildingId?: string;
@@ -47,24 +43,6 @@ export const fetchExpenses = async (
   options: FetchExpensesOptions = {}
 ): Promise<DashboardData> => {
   const { month, buildingId, forDropdown } = options;
-
-  // Only use cache if not specifying a month and we have cached data
-  if (!month && cachedExpenses && !buildingId && !forDropdown) {
-    console.log("Using cached expenses");
-    return cachedExpenses;
-  }
-
-  // If we're requesting the same month that's cached, return cached data
-  if (
-    month &&
-    month === cachedMonth &&
-    cachedExpenses &&
-    !buildingId &&
-    !forDropdown
-  ) {
-    console.log(`Using cached expenses for month: ${month}`);
-    return cachedExpenses;
-  }
 
   // Start with relative path for API endpoint
   let url = "/api/expenses";
@@ -115,19 +93,6 @@ export const fetchExpenses = async (
   if (!data.expenses || !Array.isArray(data.expenses)) {
     console.error("Invalid data format received from API:", data);
     throw new Error("Invalid data format received from API");
-  }
-
-  // Only cache if not specifying a month or building and not for dropdown
-  if (!month && !buildingId && !forDropdown) {
-    cachedExpenses = data;
-    console.log("Caching all expenses");
-  }
-
-  // Save which month was cached
-  if (month && !buildingId && !forDropdown) {
-    cachedMonth = month;
-    cachedExpenses = data;
-    console.log(`Caching expenses for month: ${month}`);
   }
 
   return data;
