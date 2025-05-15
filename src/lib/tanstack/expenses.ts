@@ -14,6 +14,9 @@ export function useExpenses(options: FetchExpensesOptions = {}) {
       const data = await fetchExpenses(options);
       return data.expenses || [];
     },
+    staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep unused data for 10 minutes
+    retry: 2, // Retry failed requests twice
     placeholderData: (previousData) => previousData,
   });
 }
@@ -24,12 +27,18 @@ export function useExpenses(options: FetchExpensesOptions = {}) {
 export function useAvailableMonths(buildingId?: string) {
   return useQuery({
     queryKey: expenseKeys.months(),
-    queryFn: () => fetchExpenses({ forDropdown: true, buildingId }),
-    select: (data) => {
+    queryFn: async () => {
+      const data = await fetchExpenses({ forDropdown: true, buildingId });
+      return data.expenses || [];
+    },
+    staleTime: 10 * 60 * 1000, // Months change less frequently
+    gcTime: 15 * 60 * 1000,
+    retry: 1,
+    select: (expenses) => {
       // Extract unique expense_reporting_month values
       const uniqueMonths = Array.from(
         new Set(
-          data.expenses
+          expenses
             .map((expense) => expense.expense_reporting_month)
             .filter(Boolean)
         )
