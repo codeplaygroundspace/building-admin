@@ -10,3 +10,11 @@ export const expenseKeys = {
   detail: (id: string) => [...expenseKeys.details(), id] as const,
   months: () => [...expenseKeys.all, "months"] as const,
 };
+
+// Query keys for project-related queries
+export const projectKeys = {
+  all: ["projects"] as const,
+  lists: () => [...projectKeys.all, "list"] as const,
+  details: () => [...projectKeys.all, "detail"] as const,
+  detail: (id: string | number) => [...projectKeys.details(), id] as const,
+};
