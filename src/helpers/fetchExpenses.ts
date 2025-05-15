@@ -11,11 +11,9 @@
  * - Fallback data mechanism for error resilience
  * - Detailed console logging for debugging
  *
- * IMPORTANT FILTERING BEHAVIOR:
- * - When a month is specified, the app actually shows data from the PREVIOUS month
- * - For example, passing { month: "March 2023" } shows data from February 2023
- * - The filtering uses date_from and date_to fields, not created_at
- * - Expenses are included if their date range overlaps with the target month
+ * FILTERING BEHAVIOR:
+ * - Expense months are stored in YYYY-MM format (e.g., "2025-04" for April 2025)
+ * - The filtering uses expense_reporting_month field
  *
  * Usage examples:
  *
@@ -23,17 +21,15 @@
  * const data = await fetchExpenses();
  *
  * // Fetch expenses for a specific month
- * // Note: This will return data from January 2023, not February 2023
- * const februaryData = await fetchExpenses({ month: "February 2023" });
+ * const aprilData = await fetchExpenses({ month: "2025-04" });
  *
  * // Fetch expenses for a specific building
  * const buildingData = await fetchExpenses({ buildingId: "building-uuid" });
  *
- * // Fetch expenses for a specific month and building without previous month data
+ * // Fetch expenses for a specific month and building
  * const filteredData = await fetchExpenses({
- *   month: "March 2023",
- *   buildingId: "building-uuid",
- *   previousMonth: false
+ *   month: "2025-04",
+ *   buildingId: "building-uuid"
  * });
  */
 
@@ -62,23 +58,29 @@ const fallbackData: DashboardData = {
 
 interface FetchExpensesOptions {
   month?: string;
-  previousMonth?: boolean;
   buildingId?: string;
+  forDropdown?: boolean;
 }
 
 export const fetchExpenses = async (
   options: FetchExpensesOptions = {}
 ): Promise<DashboardData> => {
-  const { month, previousMonth = true, buildingId } = options;
+  const { month, buildingId, forDropdown } = options;
 
   // Only use cache if not specifying a month and we have cached data
-  if (!month && cachedExpenses && !buildingId) {
+  if (!month && cachedExpenses && !buildingId && !forDropdown) {
     console.log("Using cached expenses");
     return cachedExpenses;
   }
 
   // If we're requesting the same month that's cached, return cached data
-  if (month && month === cachedMonth && cachedExpenses && !buildingId) {
+  if (
+    month &&
+    month === cachedMonth &&
+    cachedExpenses &&
+    !buildingId &&
+    !forDropdown
+  ) {
     console.log(`Using cached expenses for month: ${month}`);
     return cachedExpenses;
   }
@@ -91,22 +93,19 @@ export const fetchExpenses = async (
     console.log(`Fetching expenses with options:`, JSON.stringify(options));
 
     if (month) {
-      // Convert from "Month YYYY" format to "YYYY-MM" format for API
-      const monthDate = dayjs(month, "MMMM YYYY");
-      const formattedMonth = monthDate.format("YYYY-MM");
-      params.append("month", formattedMonth);
-      console.log(`Month parameter: ${month} -> ${formattedMonth}`);
-
-      // Whether to fetch previous month's expenses
-      if (previousMonth) {
-        params.append("previousMonth", "true");
-        console.log("Including previousMonth=true parameter");
-      }
+      // Use the YYYY-MM format directly
+      params.append("month", month);
+      console.log(`Month parameter: ${month}`);
     }
 
     if (buildingId) {
       params.append("building_id", buildingId);
       console.log(`Building ID parameter: ${buildingId}`);
+    }
+
+    if (forDropdown) {
+      params.append("forDropdown", "true");
+      console.log("Fetching all months for dropdown");
     }
 
     // Append params to URL if there are any
@@ -137,14 +136,14 @@ export const fetchExpenses = async (
       throw new Error("Invalid data format received from API");
     }
 
-    // Only cache if not specifying a month or building
-    if (!month && !buildingId) {
+    // Only cache if not specifying a month or building and not for dropdown
+    if (!month && !buildingId && !forDropdown) {
       cachedExpenses = data;
       console.log("Caching all expenses");
     }
 
     // Save which month was cached
-    if (month && !buildingId) {
+    if (month && !buildingId && !forDropdown) {
       cachedMonth = month;
       cachedExpenses = data;
       console.log(`Caching expenses for month: ${month}`);

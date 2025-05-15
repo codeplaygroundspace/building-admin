@@ -9,6 +9,7 @@ interface DropdownProps {
   onSelect: (item: string) => void;
   error?: string | null;
   isLoading?: boolean;
+  itemFormatter?: (item: string) => string;
 }
 
 export const Dropdown = ({
@@ -17,6 +18,7 @@ export const Dropdown = ({
   onSelect,
   error,
   isLoading = false,
+  itemFormatter = (item) => item, // Default formatter just returns the item
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,7 +44,11 @@ export const Dropdown = ({
         disabled={isLoading}
       >
         <span>
-          {isLoading ? "Cargando..." : selectedItem || "Seleccione mes"}
+          {isLoading
+            ? "Cargando..."
+            : selectedItem
+            ? itemFormatter(selectedItem)
+            : "Seleccione mes"}
         </span>
         <ChevronDown className="ml-2 h-4 w-4" />
       </button>
@@ -67,7 +73,7 @@ export const Dropdown = ({
                 item === selectedItem && "font-bold bg-gray-100"
               )}
             >
-              {item}
+              {itemFormatter(item)}
             </li>
           ))}
         </ul>

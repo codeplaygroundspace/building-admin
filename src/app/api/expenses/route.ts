@@ -28,14 +28,14 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const buildingId = url.searchParams.get("building_id");
 
-    // Get month from query params
+    // Get month from query params (now in YYYY-MM format)
     const month = url.searchParams.get("month");
 
-    // Get previousMonth flag from query params
-    const isPreviousMonth = url.searchParams.get("previousMonth") === "true";
+    // Check if we're fetching for the dropdown
+    const forDropdown = url.searchParams.get("forDropdown") === "true";
 
     console.log(
-      `API Request - Building ID: ${buildingId}, Month: ${month}, isPreviousMonth: ${isPreviousMonth}`
+      `API Request - Building ID: ${buildingId}, Month: ${month}, forDropdown: ${forDropdown}`
     );
 
     // First try a direct query approach using RLS
@@ -52,18 +52,8 @@ export async function GET(request: Request) {
       }
 
       // Filter by month if provided
-      if (month) {
-        const selectedMonthDate = dayjs(`${month}-01`);
-        let targetMonth;
-
-        if (isPreviousMonth) {
-          targetMonth = selectedMonthDate.subtract(1, "month");
-        } else {
-          targetMonth = selectedMonthDate;
-        }
-
-        const monthStr = targetMonth.format("MMMM YYYY");
-        query = query.eq("expense_reporting_month", monthStr);
+      if (month && !forDropdown) {
+        query = query.eq("expense_reporting_month", month);
       }
 
       const { data: directData, error: directError } = await query;
@@ -144,7 +134,7 @@ export async function GET(request: Request) {
             ? providerMap[expense.provider_id]
             : null;
 
-          const providerName = provider ? provider.name : "Generallll";
+          const providerName = provider ? provider.name : "General";
           const categoryId = provider ? provider.provider_category_id : null;
           const providerCategory = categoryId
             ? categoryMap[categoryId]
@@ -187,16 +177,8 @@ export async function GET(request: Request) {
       sqlQuery += ` AND e.building_id = '${buildingId}'`;
     }
 
-    if (month) {
-      let targetMonth;
-      if (isPreviousMonth) {
-        targetMonth = dayjs(`${month}-01`).subtract(1, "month");
-      } else {
-        targetMonth = dayjs(`${month}-01`);
-      }
-
-      const monthStr = targetMonth.format("MMMM YYYY");
-      sqlQuery += ` AND e.expense_reporting_month = '${monthStr}'`;
+    if (month && !forDropdown) {
+      sqlQuery += ` AND e.expense_reporting_month = '${month}'`;
     }
 
     console.log("Executing SQL query:", sqlQuery);
@@ -226,17 +208,9 @@ export async function GET(request: Request) {
           );
         }
 
-        if (month) {
-          let targetMonth;
-          if (isPreviousMonth) {
-            targetMonth = dayjs(`${month}-01`).subtract(1, "month");
-          } else {
-            targetMonth = dayjs(`${month}-01`);
-          }
-
-          const monthStr = targetMonth.format("MMMM YYYY");
+        if (month && !forDropdown) {
           filteredData = filteredData.filter(
-            (exp) => exp.expense_reporting_month === monthStr
+            (exp) => exp.expense_reporting_month === month
           );
         }
 
@@ -347,7 +321,7 @@ export async function GET(request: Request) {
         created_at: row.created_at,
         description: row.description,
         building_id: row.building_id,
-        building_address: buildingMap[row.building_id] || "Ejido 123333",
+        building_address: buildingMap[row.building_id] || "Ejido 123",
         provider_id: row.provider_id,
         provider_category: row.provider_category || "General",
         expense_reporting_month: row.expense_reporting_month,
@@ -371,6 +345,7 @@ export async function GET(request: Request) {
           building_address: "Ejido 123",
           provider_id: "Mantenimiento",
           provider_category: "General",
+          expense_reporting_month: dayjs().format("YYYY-MM"),
         },
       ],
     };

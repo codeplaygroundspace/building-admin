@@ -9,13 +9,10 @@ import React, {
 } from "react";
 import { DashboardData } from "@/types/expense";
 import { fetchExpenses } from "@/helpers/fetchExpenses";
-import { filterUniqueMonth } from "@/helpers/filterUniqueMonth";
-import dayjs from "dayjs";
 
 interface MonthContextType {
   months: string[];
   selectedMonth: string | null;
-  displayMonth: string | null;
   setSelectedMonth: (month: string) => void;
   isLoading: boolean;
   error: string | null;
@@ -38,7 +35,6 @@ export function MonthProvider({
 }) {
   const [months, setMonths] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [displayMonth, setDisplayMonth] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,22 +51,18 @@ export function MonthProvider({
 
         const data: DashboardData = await fetchExpenses(params);
 
-        // Process expenses to extract unique months
-        console.log(
-          "Month Context - Processing expenses for months:",
-          data.expenses.length
+        // Extract unique expense_reporting_month values
+        const uniqueMonths = Array.from(
+          new Set(
+            data.expenses
+              .map((expense) => expense.expense_reporting_month)
+              .filter(Boolean)
+          )
         );
-        const availableMonths = filterUniqueMonth(data.expenses);
 
-        // Add current month if not already included
-        const currentMonth = dayjs().format("MMMM YYYY");
-        if (!availableMonths.includes(currentMonth)) {
-          availableMonths.push(currentMonth);
-        }
-
-        // Sort months chronologically
-        const sortedMonths = availableMonths.sort((a, b) =>
-          dayjs(a, "MMMM YYYY").diff(dayjs(b, "MMMM YYYY"))
+        // Sort months chronologically (YYYY-MM format)
+        const sortedMonths = [...uniqueMonths].sort((a, b) =>
+          b.localeCompare(a)
         );
 
         console.log("Month Context - Available months:", sortedMonths);
@@ -78,12 +70,7 @@ export function MonthProvider({
 
         // Set default selected month if none selected yet
         if (!selectedMonth && sortedMonths.length > 0) {
-          // Default to current month if available, otherwise most recent
-          if (sortedMonths.includes(currentMonth)) {
-            setSelectedMonth(currentMonth);
-          } else {
-            setSelectedMonth(sortedMonths[sortedMonths.length - 1]);
-          }
+          setSelectedMonth(sortedMonths[0]); // Select most recent month by default
         }
       } catch (err) {
         console.error("Error fetching months:", err);
@@ -96,25 +83,11 @@ export function MonthProvider({
     fetchMonths();
   }, [buildingId, selectedMonth]);
 
-  // Update display month whenever selected month changes
-  useEffect(() => {
-    if (selectedMonth) {
-      // Display month is typically the previous month of the selected month
-      const selectedMonthDate = dayjs(selectedMonth, "MMMM YYYY");
-      const previousMonthDate = selectedMonthDate.subtract(1, "month");
-      const displayMonthString = previousMonthDate.format("MMMM YYYY");
-      setDisplayMonth(displayMonthString);
-    } else {
-      setDisplayMonth(null);
-    }
-  }, [selectedMonth]);
-
   return (
     <MonthContext.Provider
       value={{
         months,
         selectedMonth,
-        displayMonth,
         setSelectedMonth,
         isLoading,
         error,
