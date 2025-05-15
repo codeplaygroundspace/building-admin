@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useBuilding } from "@/contexts/building-context";
 import CardWrapper from "@/components/CardWrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import dayjs from "dayjs";
 import { formatUppercase } from "@/helpers/formatters";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, X, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,51 +24,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Provider,
-  ProjectExpenseItem,
-  FetchedProjectExpense,
-  SortConfig,
-} from "@/types/expense";
+import { Provider } from "@/types/expense";
+import { ProjectItem, FetchedProject, SortConfig } from "@/types/project";
+import { useProjects, useAddBulkProjects } from "@/lib/tanstack/projects";
 
 export default function AdminGastosPuntualesPage() {
-  const { building } = useBuilding();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
-  const [allProjectExpenses, setAllProjectExpenses] = useState<
-    FetchedProjectExpense[]
-  >([]);
-  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
-  const [sortConfig, setSortConfig] = useState<
-    SortConfig<FetchedProjectExpense>
-  >({
+  const [sortConfig, setSortConfig] = useState<SortConfig<FetchedProject>>({
     key: null,
     direction: "ascending",
   });
   const [nextId, setNextId] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Query hooks
+  const { data: allProjects = [], isLoading: isLoadingProjects } =
+    useProjects();
+  const addBulkProjects = useAddBulkProjects();
+
+  // Debug
+  useEffect(() => {
+    console.log("Projects data:", allProjects);
+    console.log("isLoading:", isLoadingProjects);
+  }, [allProjects, isLoadingProjects]);
 
   // Function to get next stable ID
   const getNextStableId = useCallback(() => {
-    const id = `project-expense-${nextId}`;
+    const id = `project-${nextId}`;
     setNextId((prev) => prev + 1);
     return id;
   }, [nextId]);
 
-  // Initialize with a single project expense
-  const [projectExpenses, setProjectExpenses] = useState<ProjectExpenseItem[]>([
+  // Initialize with a single project
+  const [projects, setProjects] = useState<ProjectItem[]>([
     {
-      id: "project-expense-1",
+      id: "project-1",
       description: "",
-      amount: "",
+      cost: "",
+      status: true,
       provider_id: "",
       provider_name: "",
       provider_category: "General",
-      expense_reporting_month: dayjs().format("YYYY-MM"),
     },
   ]);
 
@@ -101,131 +98,74 @@ export default function AdminGastosPuntualesPage() {
     fetchProviders();
   }, []);
 
-  // Fetch project expenses - to be implemented later with real API endpoint
-  const fetchProjectExpenses = useCallback(async () => {
-    if (!building?.id) return;
-
-    try {
-      setIsLoadingExpenses(true);
-      // This will be replaced with actual API endpoint for project expenses
-      setAllProjectExpenses([]);
-    } catch (error) {
-      console.error("Error fetching project expenses:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load project expenses",
-      });
-    } finally {
-      setIsLoadingExpenses(false);
-    }
-  }, [building?.id]);
-
-  // Fetch project expenses when the building changes
-  useEffect(() => {
-    if (building?.id) {
-      fetchProjectExpenses();
-    }
-  }, [building?.id, fetchProjectExpenses]);
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    expenseId: string
+    projectId: string
   ) => {
     const { name, value } = e.target;
-    setProjectExpenses((prevExpenses) =>
-      prevExpenses.map((exp) =>
-        exp.id === expenseId ? { ...exp, [name]: value } : exp
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === projectId ? { ...project, [name]: value } : project
       )
     );
   };
 
-  const handleProviderChange = (providerId: string, expenseId: string) => {
+  const handleProviderChange = (providerId: string, projectId: string) => {
     const selectedProvider = providers.find(
       (provider) => provider.id === providerId
     );
 
-    setProjectExpenses((prevExpenses) =>
-      prevExpenses.map((exp) =>
-        exp.id === expenseId
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === projectId
           ? {
-              ...exp,
+              ...project,
               provider_id: providerId,
               provider_name: selectedProvider?.name || "",
               provider_category: selectedProvider?.category_name || "General",
             }
-          : exp
+          : project
       )
     );
   };
 
-  const handleAddExpense = () => {
-    // Use the reporting month from the first expense for consistency
-    const reportingMonth =
-      projectExpenses[0]?.expense_reporting_month || dayjs().format("YYYY-MM");
-
-    setProjectExpenses((prev) => [
+  const handleAddProject = () => {
+    setProjects((prev) => [
       ...prev,
       {
         id: getNextStableId(),
         description: "",
-        amount: "",
+        cost: "",
+        status: true,
         provider_id: "",
         provider_name: "",
         provider_category: "General",
-        expense_reporting_month: reportingMonth,
       },
     ]);
   };
 
-  const handleRemoveExpense = (expenseId: string) => {
-    // Don't allow removing if only one expense remains
-    if (projectExpenses.length <= 1) return;
+  const handleRemoveProject = (projectId: string) => {
+    // Don't allow removing if only one project remains
+    if (projects.length <= 1) return;
 
-    setProjectExpenses((prev) => prev.filter((exp) => exp.id !== expenseId));
-  };
-
-  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    // Update all expenses with the same reporting month
-    setProjectExpenses((prev) =>
-      prev.map((exp) => ({
-        ...exp,
-        expense_reporting_month: value,
-      }))
-    );
+    setProjects((prev) => prev.filter((project) => project.id !== projectId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!building?.id) {
-      toast({
-        title: "Hay un error 🥴",
-        description: "No building selected",
-      });
-      return;
-    }
+    // Check for any validations in browser console
+    console.log("Submitting projects:", projects);
 
-    // Validate all expenses
-    const invalidExpenses = projectExpenses.filter(
-      (exp) => !exp.amount || !exp.provider_id
+    // Validate all projects
+    const invalidProjects = projects.filter(
+      (project) => !project.cost || !project.provider_id
     );
 
-    if (invalidExpenses.length > 0) {
+    if (invalidProjects.length > 0) {
       toast({
         title: "Hay un error 🥴",
-        description: `Debes completar todos los datos requeridos en ${invalidExpenses.length} gastos de proyecto`,
-      });
-      return;
-    }
-
-    // Validate expense_reporting_month format
-    const reportingMonth = projectExpenses[0].expense_reporting_month;
-    const dateRegex = /^\d{4}-\d{2}$/;
-    if (!dateRegex.test(reportingMonth)) {
-      toast({
-        title: "Hay un error 🥴",
-        description: "El formato debe ser YYYY-MM",
+        description: `Debes completar todos los datos requeridos en ${invalidProjects.length} gastos puntuales`,
       });
       return;
     }
@@ -233,78 +173,36 @@ export default function AdminGastosPuntualesPage() {
     try {
       setIsSubmitting(true);
 
-      // Prepare all expense data
-      const expensesData = projectExpenses.map((exp) => ({
-        description: exp.description || null, // Allow null description
-        amount: parseFloat(exp.amount),
-        provider_id: exp.provider_id,
-        provider_name: exp.provider_name,
-        provider_category: exp.provider_category,
-        building_id: building.id,
-        expense_reporting_month: exp.expense_reporting_month,
+      // Prepare all project data
+      const projectsData = projects.map((project) => ({
+        description: project.description || null,
+        cost: parseFloat(project.cost),
+        status: project.status,
+        provider_id: project.provider_id,
       }));
 
-      // This will be replaced with actual API endpoint for project expenses
-      toast({
-        title: "Implementación pendiente",
-        description: `La funcionalidad para guardar ${expensesData.length} gastos de proyectos será implementada próximamente`,
-      });
+      console.log("Sending data to API:", projectsData);
 
-      // TODO: Implement API endpoint for project expenses
-      // const response = await fetch("/api/project-expenses/add-bulk", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({ expenses: expensesData }),
-      // });
+      // Use mutation to add projects
+      await addBulkProjects.mutateAsync(projectsData);
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || "Failed to add project expenses");
-      // }
-
-      // Reset the form with one empty expense (commented out until API is implemented)
-      // setProjectExpenses([
-      //   {
-      //     id: getNextStableId(),
-      //     description: "",
-      //     amount: "",
-      //     provider_id: "",
-      //     provider_name: "",
-      //     provider_category: "General",
-      //     expense_reporting_month: reportingMonth,
-      //   },
-      // ]);
-
-      // toast({
-      //   title: "Listo ✅",
-      //   description: `${expensesData.length} gastos de proyecto agregados correctamente`,
-      // });
-
-      // // Refresh expenses list after adding new ones
-      // fetchProjectExpenses();
+      // Reset the form with one empty project
+      setProjects([
+        {
+          id: getNextStableId(),
+          description: "",
+          cost: "",
+          status: true,
+          provider_id: "",
+          provider_name: "",
+          provider_category: "General",
+        },
+      ]);
     } catch (error) {
-      console.error("Error al agregar gastos de proyecto:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Un error desconocido ha ocurrido",
-      });
+      console.error("Error al agregar gastos puntuales:", error);
+      // Error is handled by the mutation
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Format month for display (YYYY-MM to MM/YYYY)
-  const formatMonth = (date: string) => {
-    if (!date) return "-";
-    try {
-      return dayjs(date).format("MM/YYYY");
-    } catch {
-      return date;
     }
   };
 
@@ -317,7 +215,7 @@ export default function AdminGastosPuntualesPage() {
   };
 
   // Handle sorting
-  const requestSort = (key: keyof FetchedProjectExpense) => {
+  const requestSort = (key: keyof FetchedProject) => {
     setSortConfig((prev) => ({
       key,
       direction:
@@ -327,9 +225,9 @@ export default function AdminGastosPuntualesPage() {
     }));
   };
 
-  // Get sorted expenses
-  const getSortedExpenses = () => {
-    return [...allProjectExpenses].sort((a, b) => {
+  // Get sorted projects
+  const getSortedProjects = () => {
+    return [...allProjects].sort((a, b) => {
       if (sortConfig.key === null) {
         return 0;
       }
@@ -354,7 +252,7 @@ export default function AdminGastosPuntualesPage() {
   };
 
   // Get sort direction icon
-  const getSortDirectionIcon = (columnKey: keyof FetchedProjectExpense) => {
+  const getSortDirectionIcon = (columnKey: keyof FetchedProject) => {
     if (sortConfig.key !== columnKey) {
       return <span className="text-gray-300 ml-1">⇅</span>;
     }
@@ -380,45 +278,26 @@ export default function AdminGastosPuntualesPage() {
     [providers]
   );
 
-  // Check if we can add more expenses (max 8)
-  const canAddMoreExpenses = projectExpenses.length < 8;
+  // Check if we can add more projects (max 8)
+  const canAddMoreProjects = projects.length < 8;
 
-  // Get sorted expenses
-  const sortedExpenses = getSortedExpenses();
+  // Get sorted projects
+  const sortedProjects = getSortedProjects();
 
-  // Calculate available months from expenses
-  const availableMonths = useMemo(() => {
-    const uniqueMonths = [
-      ...new Set(allProjectExpenses.map((e) => e.expense_reporting_month)),
-    ];
-    return uniqueMonths.sort((a, b) => b.localeCompare(a)); // Sort in descending order (newest first)
-  }, [allProjectExpenses]);
-
-  // Filter expenses by month and apply pagination
-  const filteredAndPaginatedExpenses = useMemo(() => {
-    // First filter by selected month if any
-    const filtered =
-      selectedMonth && selectedMonth !== "all"
-        ? sortedExpenses.filter(
-            (expense) => expense.expense_reporting_month === selectedMonth
-          )
-        : sortedExpenses;
-
-    // Then apply pagination
+  // Apply pagination to projects
+  const paginatedProjects = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
-    return filtered.slice(startIndex, startIndex + rowsPerPage);
-  }, [sortedExpenses, selectedMonth, currentPage, rowsPerPage]);
+    const paginatedResult = sortedProjects.slice(
+      startIndex,
+      startIndex + rowsPerPage
+    );
+    console.log("Paginated projects:", paginatedResult);
+    return paginatedResult;
+  }, [sortedProjects, currentPage, rowsPerPage]);
 
-  // Calculate total pages and total expenses for pagination
-  const totalExpenses = useMemo(() => {
-    return selectedMonth && selectedMonth !== "all"
-      ? sortedExpenses.filter(
-          (expense) => expense.expense_reporting_month === selectedMonth
-        ).length
-      : sortedExpenses.length;
-  }, [sortedExpenses, selectedMonth]);
-
-  const totalPages = Math.max(1, Math.ceil(totalExpenses / rowsPerPage));
+  // Calculate total pages
+  const totalProjects = sortedProjects.length;
+  const totalPages = Math.max(1, Math.ceil(totalProjects / rowsPerPage));
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -427,38 +306,23 @@ export default function AdminGastosPuntualesPage() {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <CardWrapper title="Agregar gastos de proyecto">
+      <CardWrapper title="Agregar gastos puntuales">
         <form onSubmit={handleSubmit} className="space-y-6 p-4">
-          {/* Common month selector for all expenses */}
-          <div className="space-y-2">
-            <Label htmlFor="expense_reporting_month">
-              Mes al que reportan todos los gastos (YYYY-MM):
-            </Label>
-            <Input
-              id="expense_reporting_month"
-              name="expense_reporting_month"
-              type="month"
-              value={projectExpenses[0]?.expense_reporting_month || ""}
-              onChange={handleMonthChange}
-              required
-            />
-          </div>
-
-          {/* Project Expenses list */}
+          {/* Project list */}
           <div className="space-y-8">
-            {projectExpenses.map((exp, index) => (
-              <div key={exp.id} className="border rounded-lg p-4 relative">
+            {projects.map((project, index) => (
+              <div key={project.id} className="border rounded-lg p-4 relative">
                 <div className="absolute -top-3 left-3 bg-white px-2 text-sm font-medium text-gray-600">
-                  Gasto de Proyecto #{index + 1}
+                  Gasto Puntual #{index + 1}
                 </div>
 
-                {projectExpenses.length > 1 && (
+                {projects.length > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute top-2 right-2 h-6 w-6 text-gray-500 hover:text-red-500"
-                    onClick={() => handleRemoveExpense(exp.id)}
+                    onClick={() => handleRemoveProject(project.id)}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -466,15 +330,15 @@ export default function AdminGastosPuntualesPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`provider-${exp.id}`}>Proveedor:</Label>
+                    <Label htmlFor={`provider-${project.id}`}>Proveedor:</Label>
                     <Select
-                      value={exp.provider_id}
+                      value={project.provider_id}
                       onValueChange={(value) =>
-                        handleProviderChange(value, exp.id)
+                        handleProviderChange(value, project.id)
                       }
                       required
                     >
-                      <SelectTrigger id={`provider-${exp.id}`}>
+                      <SelectTrigger id={`provider-${project.id}`}>
                         <SelectValue placeholder="Selecciona un proveedor" />
                       </SelectTrigger>
                       <SelectContent>
@@ -500,105 +364,103 @@ export default function AdminGastosPuntualesPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`amount-${exp.id}`}>Monto:</Label>
+                    <Label htmlFor={`cost-${project.id}`}>Costo:</Label>
                     <Input
-                      id={`amount-${exp.id}`}
-                      name="amount"
+                      id={`cost-${project.id}`}
+                      name="cost"
                       type="number"
                       step="0.01"
-                      value={exp.amount}
-                      onChange={(e) => handleInputChange(e, exp.id)}
+                      value={project.cost}
+                      onChange={(e) => handleInputChange(e, project.id)}
                       placeholder="0.00"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`description-${exp.id}`}>
-                      Descripcion de gasto (opcional):
+                    <Label htmlFor={`description-${project.id}`}>
+                      Descripción del gasto puntual (opcional):
                     </Label>
                     <Textarea
-                      id={`description-${exp.id}`}
+                      id={`description-${project.id}`}
                       name="description"
-                      value={exp.description}
-                      onChange={(e) => handleInputChange(e, exp.id)}
-                      placeholder="Descripcion de gasto si fuera necesario"
+                      value={project.description}
+                      onChange={(e) => handleInputChange(e, project.id)}
+                      placeholder="Descripción del gasto puntual"
                       className="min-h-[80px]"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`status-${project.id}`}>Estado:</Label>
+                    <Select
+                      value={project.status ? "true" : "false"}
+                      onValueChange={(value) => {
+                        setProjects((prevProjects) =>
+                          prevProjects.map((p) =>
+                            p.id === project.id
+                              ? { ...p, status: value === "true" }
+                              : p
+                          )
+                        );
+                      }}
+                    >
+                      <SelectTrigger id={`status-${project.id}`}>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Activo</SelectItem>
+                        <SelectItem value="false">Inactivo</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Add more expenses button */}
-          {canAddMoreExpenses && (
+          {/* Add more projects button */}
+          {canAddMoreProjects && (
             <Button
               type="button"
               variant="outline"
               className="w-full border-dashed"
-              onClick={handleAddExpense}
+              onClick={handleAddProject}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              Agregar otro gasto de proyecto
+              Agregar otro gasto puntual
             </Button>
           )}
 
           <div className="flex w-full">
             <Button
               type="submit"
-              disabled={isSubmitting || isLoadingProviders}
+              disabled={
+                isSubmitting || isLoadingProviders || addBulkProjects.isPending
+              }
               className="w-full bg-black hover:bg-gray-800"
             >
-              {isSubmitting
-                ? `Agregando ${projectExpenses.length} gastos...`
-                : `Agregar ${projectExpenses.length} gasto${
-                    projectExpenses.length > 1 ? "s" : ""
-                  } de proyecto`}
+              {isSubmitting || addBulkProjects.isPending ? (
+                <span className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Agregando {projects.length} gastos puntuales...
+                </span>
+              ) : (
+                `Agregar ${projects.length} gasto${
+                  projects.length > 1 ? "s" : ""
+                } puntual${projects.length > 1 ? "es" : ""}`
+              )}
             </Button>
           </div>
         </form>
       </CardWrapper>
 
-      {/* Project Expenses Table */}
-      <CardWrapper title="Gastos de proyectos registrados">
+      {/* Projects Table */}
+      <CardWrapper title="Gastos puntuales registrados">
         <div className="p-4 space-y-4">
-          {/* Month filter */}
-          {!isLoadingExpenses && allProjectExpenses.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <label htmlFor="month-filter" className="text-sm font-medium">
-                Filtrar por mes:
-              </label>
-              <Select
-                value={selectedMonth || "all"}
-                onValueChange={(value) => setSelectedMonth(value)}
-              >
-                <SelectTrigger id="month-filter" className="w-[200px]">
-                  <SelectValue placeholder="Todos los meses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los meses</SelectItem>
-                  {availableMonths.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {formatMonth(month)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {isLoadingExpenses ? (
-            <div className="text-center py-8">
-              Cargando gastos de proyectos...
-            </div>
-          ) : allProjectExpenses.length === 0 ? (
+          {allProjects.length === 0 && !isLoadingProjects ? (
             <div className="text-center py-8 text-gray-500">
-              No hay gastos de proyectos registrados para este edificio.
-            </div>
-          ) : totalExpenses === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No hay gastos de proyectos para el mes seleccionado.
+              No hay gastos puntuales registrados.
             </div>
           ) : (
             <>
@@ -624,19 +486,18 @@ export default function AdminGastosPuntualesPage() {
                       </TableHead>
                       <TableHead
                         className="cursor-pointer hover:bg-gray-100 transition-colors"
-                        onClick={() => requestSort("amount")}
+                        onClick={() => requestSort("cost")}
                       >
                         <div className="flex items-center">
-                          Monto {getSortDirectionIcon("amount")}
+                          Costo {getSortDirectionIcon("cost")}
                         </div>
                       </TableHead>
                       <TableHead
                         className="cursor-pointer hover:bg-gray-100 transition-colors"
-                        onClick={() => requestSort("expense_reporting_month")}
+                        onClick={() => requestSort("status")}
                       >
                         <div className="flex items-center">
-                          Mes que reporta{" "}
-                          {getSortDirectionIcon("expense_reporting_month")}
+                          Estado {getSortDirectionIcon("status")}
                         </div>
                       </TableHead>
                       <TableHead
@@ -650,26 +511,53 @@ export default function AdminGastosPuntualesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAndPaginatedExpenses.map((expense, index) => (
-                      <TableRow
-                        key={expense.id}
-                        className={`${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        } hover:bg-primary/10 transition-colors`}
-                      >
-                        <TableCell className="font-medium">
-                          {formatUppercase(expense.provider_name || "General")}
-                        </TableCell>
-                        <TableCell>{expense.provider_category}</TableCell>
-                        <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                        <TableCell>
-                          {formatMonth(expense.expense_reporting_month)}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {expense.description || "-"}
+                    {isLoadingProjects && paginatedProjects.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          <div className="flex justify-center items-center">
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            <span>Cargando datos...</span>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : paginatedProjects.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          No se encontraron resultados para la página actual.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedProjects.map((project, index) => (
+                        <TableRow
+                          key={project.id}
+                          className={`${
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          } hover:bg-primary/10 transition-colors`}
+                        >
+                          <TableCell className="font-medium">
+                            {formatUppercase(
+                              project.provider_name || "General"
+                            )}
+                          </TableCell>
+                          <TableCell>{project.provider_category}</TableCell>
+                          <TableCell>{formatCurrency(project.cost)}</TableCell>
+                          <TableCell>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                project.status
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {project.status ? "Activo" : "Inactivo"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">
+                            {project.description || "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -699,7 +587,7 @@ export default function AdminGastosPuntualesPage() {
 
                 <div className="flex items-center justify-between sm:justify-end space-x-2">
                   <div className="text-sm text-gray-500 whitespace-nowrap mr-2">
-                    {totalExpenses} gastos de proyectos en total | Página{" "}
+                    {totalProjects} gastos puntuales en total | Página{" "}
                     {currentPage} de {totalPages}
                   </div>
                   <Button
@@ -719,6 +607,193 @@ export default function AdminGastosPuntualesPage() {
                     className="h-8 px-3"
                   >
                     Siguiente
+                  </Button>
+                </div>
+              </div>
+
+              {/* Debug tools */}
+              <div className="mt-8 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                <h3 className="text-sm font-semibold mb-2">
+                  Herramientas de depuración
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch("/api/projects/debug");
+                        const data = await response.json();
+                        console.log("Debug response:", data);
+                        toast({
+                          title:
+                            data.status === "success"
+                              ? "Debug Exitoso"
+                              : "Error de Debug",
+                          description: `Conteo de proyectos: ${data.projectCount}`,
+                        });
+                      } catch (error) {
+                        console.error("Debug error:", error);
+                        toast({
+                          title: "Error",
+                          description: "Error al ejecutar diagnóstico",
+                        });
+                      }
+                    }}
+                  >
+                    Diagnosticar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch("/api/projects/seed");
+                        const data = await response.json();
+                        console.log("Seed response:", data);
+                        toast({
+                          title:
+                            data.status === "success"
+                              ? "Seed Exitoso"
+                              : "Error de Seed",
+                          description: data.message,
+                        });
+
+                        if (data.status === "success") {
+                          // Refetch projects after successful seeding
+                          setTimeout(() => window.location.reload(), 1000);
+                        }
+                      } catch (error) {
+                        console.error("Seed error:", error);
+                        toast({
+                          title: "Error",
+                          description: "Error al insertar datos de ejemplo",
+                        });
+                      }
+                    }}
+                  >
+                    Insertar Ejemplo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(
+                          "/api/projects/seed-direct"
+                        );
+                        const data = await response.json();
+                        console.log("Direct SQL seed response:", data);
+                        toast({
+                          title:
+                            data.status === "success"
+                              ? "SQL Seed Exitoso"
+                              : "Error de SQL Seed",
+                          description: data.message,
+                        });
+
+                        if (data.status === "success") {
+                          // Refetch projects after successful seeding
+                          setTimeout(() => window.location.reload(), 1000);
+                        }
+                      } catch (error) {
+                        console.error("Direct SQL seed error:", error);
+                        toast({
+                          title: "Error",
+                          description: "Error al ejecutar SQL directo",
+                        });
+                      }
+                    }}
+                  >
+                    SQL Directo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Force a clear cache and hard reload
+                      window.localStorage.clear();
+                      window.location.reload();
+                    }}
+                  >
+                    Refrescar Forzado
+                  </Button>
+                </div>
+
+                <div className="mt-4 text-xs text-gray-500">
+                  <div>
+                    Estado de la API:{" "}
+                    {isLoadingProjects
+                      ? "Cargando..."
+                      : allProjects.length > 0
+                      ? `${allProjects.length} proyectos cargados`
+                      : "Sin datos"}
+                  </div>
+                  <div>
+                    Datos paginados: {paginatedProjects.length} proyectos en la
+                    página actual
+                  </div>
+                  <div>Intenta usar los botones de arriba si no ves datos</div>
+                </div>
+
+                <div className="mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch("/api/projects/simple");
+                        const data = await response.json();
+                        console.log("Simple API response:", data);
+                        toast({
+                          title:
+                            data.projects && data.projects.length > 0
+                              ? "Datos Encontrados"
+                              : "Sin Datos",
+                          description:
+                            data.projects && data.projects.length > 0
+                              ? `Se encontraron ${data.projects.length} proyectos`
+                              : data.error || "No se encontraron proyectos",
+                        });
+
+                        if (data.projects && data.projects.length > 0) {
+                          // Force a refresh to use new data
+                          window.location.reload();
+                        }
+                      } catch (error) {
+                        console.error("Simple API error:", error);
+                        toast({
+                          title: "Error",
+                          description: "Error al consultar API simple",
+                        });
+                      }
+                    }}
+                  >
+                    API Simple
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch("/api/supabase-info");
+                        const data = await response.json();
+                        console.log("Supabase info:", data);
+                        toast({
+                          title: "Conexión Supabase",
+                          description: `URL: ${data.connection_details.url}, Key: ${data.connection_details.key_status}`,
+                        });
+                      } catch (error) {
+                        console.error("Supabase info error:", error);
+                        toast({
+                          title: "Error",
+                          description: "Error al verificar conexión",
+                        });
+                      }
+                    }}
+                  >
+                    Info Supabase
                   </Button>
                 </div>
               </div>
