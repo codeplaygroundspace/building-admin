@@ -32,6 +32,7 @@
  */
 
 import { DashboardData } from "@/types/expense";
+import { getBaseUrl } from "@/lib/utils";
 
 export interface FetchExpensesOptions {
   month?: string | null;
@@ -44,8 +45,9 @@ export const fetchExpenses = async (
 ): Promise<DashboardData> => {
   const { month, buildingId, forDropdown } = options;
 
-  // Start with relative path for API endpoint
-  let url = "/api/expenses";
+  // Create absolute URL for API endpoint
+  const baseUrl = getBaseUrl();
+  let url = `${baseUrl}/api/expenses`;
   const params = new URLSearchParams();
 
   console.log(`Fetching expenses with options:`, JSON.stringify(options));

@@ -20,6 +20,7 @@ export interface ProjectItem {
   provider_id: string;
   provider_name: string;
   provider_category: string;
+  building_id?: string;
 }
 
 /**
@@ -36,6 +37,8 @@ export interface FetchedProject {
   provider_id: string | null;
   provider_name: string;
   provider_category: string;
+  building_id?: string | null;
+  building_address?: string | null;
 }
 
 /**

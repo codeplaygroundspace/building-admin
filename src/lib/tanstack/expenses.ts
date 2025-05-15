@@ -3,6 +3,7 @@ import { fetchExpenses, FetchExpensesOptions } from "@/helpers/fetchExpenses";
 import { expenseKeys } from "./query-keys";
 import { Expense } from "@/types/expense";
 import { toast } from "@/components/ui/use-toast";
+import { getBaseUrl } from "@/lib/utils";
 
 /**
  * Hook to fetch expenses based on provided filters
@@ -55,10 +56,11 @@ export function useAvailableMonths(buildingId?: string) {
  */
 export function useAddExpense() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   return useMutation({
     mutationFn: async (newExpense: Partial<Expense>) => {
-      const response = await fetch("/api/expenses/add", {
+      const response = await fetch(`${baseUrl}/api/expenses/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,6 +87,7 @@ export function useAddExpense() {
  */
 export function useAddBulkExpenses() {
   const queryClient = useQueryClient();
+  const baseUrl = getBaseUrl();
 
   interface BulkExpenseItem {
     description: string | null;
@@ -100,7 +103,7 @@ export function useAddBulkExpenses() {
     mutationFn: async (expenses: BulkExpenseItem[]) => {
       console.log("Submitting bulk expenses:", expenses);
 
-      const response = await fetch("/api/expenses/add-bulk", {
+      const response = await fetch(`${baseUrl}/api/expenses/add-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

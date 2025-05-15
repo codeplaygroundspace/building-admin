@@ -33,6 +33,7 @@ import {
   SortConfig,
 } from "@/types/expense";
 import { useExpenses, useAddBulkExpenses } from "@/lib/tanstack/expenses";
+import { getBaseUrl } from "@/lib/utils";
 
 export default function AdminPage() {
   const { building } = useBuilding();
@@ -81,7 +82,8 @@ export default function AdminPage() {
     const fetchProviders = async () => {
       try {
         setIsLoadingProviders(true);
-        const response = await fetch("/api/providers");
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/api/providers`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch providers");
@@ -636,6 +638,9 @@ export default function AdminPage() {
                           Descripción {getSortDirectionIcon("description")}
                         </div>
                       </TableHead>
+                      <TableHead className="cursor-pointer hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center">Edificio</div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -657,6 +662,7 @@ export default function AdminPage() {
                         <TableCell className="max-w-xs truncate">
                           {expense.description || "-"}
                         </TableCell>
+                        <TableCell>{expense.building_address || "-"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
