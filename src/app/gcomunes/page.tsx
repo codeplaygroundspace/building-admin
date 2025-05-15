@@ -7,21 +7,30 @@ import { useExpenses } from "../../hooks/useExpenses";
 import ExpensesHeader from "@/components/ExpensesHeader";
 import { useBuilding } from "@/contexts/building-context";
 import { useMonth } from "@/contexts/month-context";
+import { Loader2 } from "lucide-react";
 
 export default function ExpensesPage() {
   const { selectedMonth } = useMonth();
   const { building } = useBuilding();
 
-  // Use the backward-compatible properties
-  const { filteredExpenses, totalExpenses, loading, error } = useExpenses({
+  // Use the hook with modern property names
+  const {
+    data: filteredExpenses,
+    isLoading,
+    error,
+    totalExpenses,
+  } = useExpenses({
     month: selectedMonth,
     buildingId: building?.id,
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>Loading...</p>
+        <div className="flex flex-col items-center space-y-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Cargando gastos...</p>
+        </div>
       </div>
     );
   }
