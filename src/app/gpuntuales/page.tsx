@@ -1,19 +1,18 @@
 "use client";
 
-import { useProjects } from "@/lib/tanstack/projects";
+import { useAppData } from "@/context/AppDataProvider";
 import CardWrapper from "@/components/CardWrapper";
 import { formatCurrency } from "@/helpers/formatCurrency";
-import { FetchedProject } from "@/types/project";
 import ExpenseListItem from "@/components/ExpenseListItem";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function GastosPuntualesPage() {
-  const { data: projects = [], isLoading } = useProjects();
+  const { projects, isLoading } = useAppData();
 
   // Calculate total budget
   const totalBudget = projects.reduce(
-    (sum: number, project: FetchedProject) => sum + (project.cost || 0),
+    (sum, project) => sum + (project.cost || 0),
     0
   );
 
@@ -41,7 +40,7 @@ export default function GastosPuntualesPage() {
           </div>
         ) : (
           <ul className="space-y-4 p-4">
-            {projects.map((project: FetchedProject) => (
+            {projects.map((project) => (
               <ExpenseListItem
                 key={project.id}
                 provider_name={project.provider_name || "General"}

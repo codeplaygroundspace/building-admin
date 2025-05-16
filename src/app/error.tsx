@@ -10,15 +10,28 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error("Application error:", error);
+    // Safely log the error to an error reporting service
+    if (error) {
+      // Create a safe copy of the error message to avoid any potential issues
+      const safeErrorMessage =
+        typeof error.message === "string" ? error.message : "Unknown error";
+      console.error("Application error:", {
+        message: safeErrorMessage,
+        name: error.name,
+        stack: error.stack,
+      });
+    } else {
+      console.error("Unknown application error (error object is undefined)");
+    }
   }, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] p-4">
       <h2 className="text-2xl font-bold text-red-600 mb-4">Algo salió mal</h2>
       <p className="text-gray-700 mb-6">
-        {error.message || "Ha ocurrido un error inesperado."}
+        {error && typeof error.message === "string"
+          ? error.message
+          : "Ha ocurrido un error inesperado."}
       </p>
       <button
         onClick={reset}

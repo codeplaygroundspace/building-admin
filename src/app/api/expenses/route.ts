@@ -1,22 +1,39 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase/supabaseClient";
-import { Expense } from "@/types/expense";
-import { Building } from "@/types/building";
 
-// Provider-related interfaces (consider moving these to types/provider.ts)
+// Define interfaces for the data structure from Supabase
+interface ProviderCategory {
+  name: string;
+}
+
 interface Provider {
-  id: string;
   name: string;
   provider_category_id: string;
+  provider_categories: ProviderCategory | ProviderCategory[] | null;
 }
 
-interface ProviderCategory {
+interface RawExpense {
   id: string;
-  name: string;
+  amount: number;
+  description: string;
+  created_at: string;
+  expense_reporting_month: string;
+  building_id: string;
+  provider_id: string | null;
+  providers: Provider | Provider[] | null;
 }
 
-interface BuildingMap {
-  [key: string]: string;
+// Define the transformed expense structure
+interface TransformedExpense {
+  id: string;
+  amount: number;
+  description: string;
+  created_at: string;
+  expense_reporting_month: string;
+  building_id: string;
+  provider_id: string | null;
+  provider_name: string;
+  provider_category: string;
 }
 
 export async function GET(request: Request) {
@@ -31,135 +48,175 @@ export async function GET(request: Request) {
       `API Request - Building ID: ${buildingId}, Month: ${month}, forDropdown: ${forDropdown}`
     );
 
-    // Direct query approach - simplified
-    let query = supabase
-      .from("expenses")
-      .select(
-        "id, amount, description, created_at, expense_reporting_month, building_id, provider_id"
-      );
+    // For dropdown, just get unique months
+    if (forDropdown) {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("expense_reporting_month")
+        .eq("building_id", buildingId || "")
+        .order("expense_reporting_month", { ascending: false });
 
-    // If building ID is provided, filter by it
+      if (error) {
+        console.error("Error fetching months:", error);
+        return NextResponse.json(
+          { error: `Error fetching months: ${error.message}`, months: [] },
+          {
+            status: 500,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            },
+          }
+        );
+      }
+
+      // Extract unique months
+      const uniqueMonths = [
+        ...new Set(
+          (data || [])
+            .map((item) => item.expense_reporting_month)
+            .filter(Boolean)
+        ),
+      ];
+
+      console.log(`Returning ${uniqueMonths.length} unique months`);
+
+      return NextResponse.json(
+        { months: uniqueMonths },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300", // 5 minutes
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
+      );
+    }
+
+    // Standard expenses query with joined provider data
+    let query = supabase.from("expenses").select(`
+        id, 
+        amount, 
+        description, 
+        created_at, 
+        expense_reporting_month, 
+        building_id, 
+        provider_id,
+        providers(
+          name,
+          provider_category_id,
+          provider_categories(name)
+        )
+      `);
+
+    // Apply filters
     if (buildingId) {
       query = query.eq("building_id", buildingId);
     }
 
-    // Filter by month if provided
-    if (month && !forDropdown) {
+    if (month) {
       query = query.eq("expense_reporting_month", month);
     }
 
-    const { data: directData, error: directError } = await query;
+    // Add sorting
+    query = query.order("created_at", { ascending: false });
 
-    if (directError) {
-      console.error("Query error:", directError);
+    const { data: rawExpenses, error } = await query;
+
+    if (error) {
+      console.error("Error fetching expenses:", error);
+      // Return empty array with error for backwards compatibility
       return NextResponse.json(
-        { error: `Error fetching expenses: ${directError.message}` },
-        { status: 500 }
+        { error: `Error fetching expenses: ${error.message}`, expenses: [] },
+        {
+          status: 500,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
       );
     }
 
-    if (directData && directData.length > 0) {
-      console.log(`Found ${directData.length} expenses with direct query`);
+    // Transform the data to include provider information
+    const expenses = ((rawExpenses as unknown as RawExpense[]) || []).map(
+      (expense): TransformedExpense => {
+        // Extract provider data safely
+        let provider_name = "Desconocida";
+        let provider_category = "General";
 
-      // Get building addresses
-      const buildingIds = [
-        ...new Set(directData.map((expense) => expense.building_id)),
-      ];
-      const { data: buildings } = await supabase
-        .from("buildings")
-        .select("id, address")
-        .in("id", buildingIds);
+        try {
+          // Handle if providers is null or undefined
+          if (expense.providers) {
+            // Handle both single object and array cases
+            const provider = Array.isArray(expense.providers)
+              ? expense.providers[0]
+              : expense.providers;
 
-      const buildingMap: BuildingMap = (buildings || []).reduce(
-        (map: BuildingMap, building: Building) => {
-          map[building.id] = building.address;
-          return map;
-        },
-        {}
-      );
+            provider_name = provider?.name || "Desconocida";
 
-      // Get provider data
-      const providerIds = [
-        ...new Set(
-          directData
-            .map((expense) => expense.provider_id)
-            .filter((id) => id != null)
-        ),
-      ];
+            // Handle category - might come from nested providers.provider_categories object
+            if (provider?.provider_categories) {
+              const categories = provider.provider_categories;
+              if (Array.isArray(categories) && categories.length > 0) {
+                provider_category = categories[0].name || "General";
+              } else if (categories && typeof categories === "object") {
+                provider_category =
+                  (categories as ProviderCategory).name || "General";
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error processing provider data for expense:", err);
+        }
 
-      // Get providers with their provider_category_id
-      const { data: providers } = await supabase
-        .from("providers")
-        .select("id, name, provider_category_id")
-        .in("id", providerIds);
-
-      // Create provider map
-      const providerMap: Record<string, Provider> = (
-        (providers || []) as Provider[]
-      ).reduce((map: Record<string, Provider>, provider: Provider) => {
-        map[provider.id] = provider;
-        return map;
-      }, {});
-
-      // Get provider categories
-      const categoryIds = [
-        ...new Set(
-          (providers || [])
-            .map((provider: Provider) => provider.provider_category_id)
-            .filter((id: string | undefined) => id != null)
-        ),
-      ];
-
-      const { data: categories } = await supabase
-        .from("provider_categories")
-        .select("id, name")
-        .in("id", categoryIds);
-
-      // Create category map
-      const categoryMap: Record<string, string> = (
-        (categories || []) as ProviderCategory[]
-      ).reduce((map: Record<string, string>, category: ProviderCategory) => {
-        map[category.id] = category.name;
-        return map;
-      }, {});
-
-      // First transformation
-      const expenses: Expense[] = directData.map((expense) => {
-        const provider = expense.provider_id
-          ? providerMap[expense.provider_id]
-          : null;
-
-        const providerName = provider ? provider.name : "General";
-        const categoryId = provider ? provider.provider_category_id : null;
-        const providerCategory = categoryId
-          ? categoryMap[categoryId]
-          : "General";
-
+        // Return the transformed expense with flattened provider data
         return {
           id: expense.id,
           amount: expense.amount,
-          provider_name: providerName,
-          created_at: expense.created_at,
           description: expense.description,
-          building_id: expense.building_id,
-          building_address:
-            buildingMap[expense.building_id] || "Unknown Building",
-          provider_id: expense.provider_id,
-          provider_category: providerCategory,
+          created_at: expense.created_at,
           expense_reporting_month: expense.expense_reporting_month,
+          building_id: expense.building_id,
+          provider_id: expense.provider_id,
+          provider_name,
+          provider_category,
         };
-      });
+      }
+    );
 
-      return NextResponse.json({ expenses });
-    } else {
-      // Return empty expenses array if no data was found
-      return NextResponse.json({ expenses: [] });
-    }
+    console.log(
+      `Successfully fetched and processed ${expenses.length || 0} expenses`
+    );
+
+    // Ensure we always return an expenses array for backward compatibility
+    return NextResponse.json(
+      { expenses: expenses || [] },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=300", // 5 minutes
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
+    );
   } catch (err) {
     console.error("Error processing request:", err);
+    // Return empty array with error for backwards compatibility
     return NextResponse.json(
-      { error: "Error processing request" },
-      { status: 500 }
+      { error: "Internal server error", expenses: [] },
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
     );
   }
 }

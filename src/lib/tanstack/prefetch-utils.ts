@@ -14,8 +14,13 @@ export async function prefetchExpenses(
   await queryClient.prefetchQuery({
     queryKey: expenseKeys.list({ buildingId, month }),
     queryFn: async () => {
-      const data = await fetchExpenses({ buildingId, month });
-      return data.expenses || [];
+      try {
+        const data = await fetchExpenses({ buildingId, month });
+        return Array.isArray(data.expenses) ? data.expenses : [];
+      } catch (error) {
+        console.error("Error prefetching expenses:", error);
+        return [];
+      }
     },
     staleTime: 5 * 60 * 1000, // Match the staleTime from useExpenses
   });
@@ -31,8 +36,18 @@ export async function prefetchAvailableMonths(
   await queryClient.prefetchQuery({
     queryKey: expenseKeys.months(),
     queryFn: async () => {
-      const data = await fetchExpenses({ forDropdown: true, buildingId });
-      return data.expenses || [];
+      try {
+        const data = await fetchExpenses({ forDropdown: true, buildingId });
+        // Check if data.months exists first (preferred), otherwise fall back to data.expenses
+        if (data.months && Array.isArray(data.months)) {
+          return data.months;
+        }
+        // For backward compatibility
+        return Array.isArray(data.expenses) ? data.expenses : [];
+      } catch (error) {
+        console.error("Error prefetching months:", error);
+        return [];
+      }
     },
     staleTime: 10 * 60 * 1000, // Match the staleTime from useAvailableMonths
   });

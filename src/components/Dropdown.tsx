@@ -30,6 +30,19 @@ export const Dropdown = ({
     }
   };
 
+  // Safe wrapper for the formatter that handles null/undefined values
+  const safeFormat = (item: string | null) => {
+    if (item === null || item === undefined) {
+      return "No seleccionado";
+    }
+    try {
+      return itemFormatter(item);
+    } catch (error) {
+      console.error("Error formatting item:", error);
+      return String(item);
+    }
+  };
+
   return (
     <div className="relative">
       <button
@@ -47,7 +60,7 @@ export const Dropdown = ({
           {isLoading
             ? "Cargando..."
             : selectedItem
-            ? itemFormatter(selectedItem)
+            ? safeFormat(selectedItem)
             : "Seleccione mes"}
         </span>
         <ChevronDown className="ml-2 h-4 w-4" />
@@ -73,7 +86,7 @@ export const Dropdown = ({
                 item === selectedItem && "font-bold bg-gray-100"
               )}
             >
-              {itemFormatter(item)}
+              {safeFormat(item)}
             </li>
           ))}
         </ul>

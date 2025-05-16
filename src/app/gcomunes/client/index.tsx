@@ -33,16 +33,9 @@ export default function ClientPage() {
     return <ErrorMessage message={`Error: ${error}`} fullScreen />;
   }
 
-  // Convert the selected month to a display format (previous month)
-  const displayText = selectedMonth
-    ? getPreviousMonthDisplayText(selectedMonth)
-    : null;
-
   return (
     <>
-      {selectedMonth && displayText && (
-        <ExpensesHeader displayMonth={displayText} />
-      )}
+      {selectedMonth && <ExpensesHeader />}
       <div className="flex flex-col space-y-6">
         <ExpenseSummary totalExpenses={totalExpenses} />
         <ExpenseBreakdown
@@ -53,34 +46,4 @@ export default function ClientPage() {
       </div>
     </>
   );
-}
-
-// Helper function for month display formatting
-function getPreviousMonthDisplayText(month: string): string {
-  const [year, monthStr] = month.split("-");
-  const monthNames = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-
-  // Convert to previous month
-  let prevMonthIndex = parseInt(monthStr, 10) - 2; // -1 for 0-index, -1 for previous month
-  let prevYear = parseInt(year, 10);
-
-  if (prevMonthIndex < 0) {
-    prevMonthIndex = 11; // December
-    prevYear -= 1;
-  }
-
-  return `${monthNames[prevMonthIndex]} ${prevYear}`;
 }
