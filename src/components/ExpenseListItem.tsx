@@ -1,5 +1,4 @@
 import { formatCurrency } from "@/helpers/formatCurrency";
-import dayjs from "dayjs";
 import { getCategoryColor } from "@/helpers/getCategoryColor";
 
 interface ExpenseListItemProps {
@@ -9,64 +8,49 @@ interface ExpenseListItemProps {
   description: string;
   amount: number;
   colour?: string; // Still support custom color as a fallback
-  date_from?: string | null; // Added date_from property
-  date_to?: string | null; // Added date_to property
 }
 
 export default function ExpenseListItem({
   provider_name = "Desconocida",
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   provider_id, // Keeping parameter for API consistency
-  provider_category,
+  provider_category = "General", // Add default value to prevent undefined
   description,
   amount,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   colour, // Keeping for backward compatibility but using category colors instead
-  date_from,
-  date_to,
 }: ExpenseListItemProps) {
-  // Debug logging
-  console.log(`ExpenseListItem: ${description}`, {
-    date_from,
-    date_to,
-    provider_name,
-  });
+  // Debug logging - less verbose and only once per component update
+  const showDebugInfo = false; // Set to true when debugging
+  if (showDebugInfo) {
+    console.log(`ExpenseListItem: ${description}`, {
+      provider_name,
+      provider_category,
+    });
+  }
 
   // Use provider_name from the API
-  const displayName = provider_name;
+  const displayName = provider_name || "Desconocida";
 
   // Ensure we have a valid display name for the first letter
   const categoryInitial = (displayName || "X").charAt(0).toUpperCase();
 
-  // Format dates if available
-  const formatDate = (dateString?: string | null) => {
-    if (!dateString) return "";
-    try {
-      return dayjs(dateString).format("DD/MM/YYYY");
-    } catch (error) {
-      console.error("Error formatting date:", dateString, error);
-      return dateString || "";
-    }
-  };
+  // Safely format provider_category with additional null checks
+  const safeCategory = provider_category || "General";
 
-  // Create date range string - more reliable formatting
-  let dateRange = "";
-  if (date_from && date_to) {
-    const fromFormatted = formatDate(date_from);
-    const toFormatted = formatDate(date_to);
-    dateRange = `${fromFormatted} - ${toFormatted}`;
-  } else if (date_from) {
-    dateRange = `Desde: ${formatDate(date_from)}`;
-  } else if (date_to) {
-    dateRange = `Hasta: ${formatDate(date_to)}`;
+  // Safely capitalize first letter with proper type checking
+  let formattedCategory = "General";
+  try {
+    if (typeof safeCategory === "string" && safeCategory.length > 0) {
+      formattedCategory =
+        safeCategory.charAt(0).toUpperCase() + safeCategory.slice(1);
+    }
+  } catch (error) {
+    console.error("Error formatting category:", error);
   }
 
-  // Capitalize first letter of provider_category but keep the rest as is
-  const formattedCategory =
-    provider_category.charAt(0).toUpperCase() + provider_category.slice(1);
-
   // Get the appropriate category badge class
-  const categoryBadgeClass = getCategoryColor(provider_category);
+  const categoryBadgeClass = getCategoryColor(safeCategory);
 
   return (
     <li className="flex justify-between items-start">
@@ -84,10 +68,7 @@ export default function ExpenseListItem({
           <span className={`category-badge ${categoryBadgeClass}`}>
             {formattedCategory}
           </span>
-          {dateRange && (
-            <p className="text-sm font-semibold text-black mb-1">{dateRange}</p>
-          )}
-          <p className="text-neutral-500">{description}</p>
+          {description && <p className="text-neutral-500">{description}</p>}
         </div>
       </div>
       <p className="whitespace-nowrap">{formatCurrency(amount)}</p>

@@ -3,7 +3,9 @@ import { supabase } from "../../../lib/supabase/supabaseClient";
 
 export async function GET() {
   try {
-    // More efficient query with only the needed fields
+    console.log("API Request - Providers");
+
+    // Query without joined data to simplify the response structure
     const { data, error } = await supabase
       .from("providers")
       .select("id, name, provider_category_id")
@@ -12,40 +14,54 @@ export async function GET() {
     if (error) {
       console.error("Error fetching providers:", error);
       return NextResponse.json(
-        { error: `Error fetching providers: ${error.message}` },
-        { status: 500 }
+        { error: `Error fetching providers: ${error.message}`, providers: [] },
+        {
+          status: 500,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
       );
     }
 
-    // Also get provider categories for a better user experience
-    const { data: categories, error: categoriesError } = await supabase
-      .from("provider_categories")
-      .select("id, name");
+    // Since we're not joining provider_categories, just provide a default category_name
+    const transformedProviders = data.map((provider) => ({
+      id: provider.id,
+      name: provider.name,
+      provider_category_id: provider.provider_category_id,
+      category_name: "General", // Default category name - simpler than joining
+    }));
 
-    if (categoriesError) {
-      console.error("Error fetching categories:", categoriesError);
-      // Continue with providers only
-    }
+    console.log(
+      `Successfully fetched ${transformedProviders.length || 0} providers`
+    );
 
-    const result = {
-      providers: data || [],
-      categories: categories || [],
-    };
-
-    // Cache the response for 15 minutes (providers change less frequently)
-    return NextResponse.json(result, {
-      headers: {
-        "Cache-Control": "public, max-age=900", // 15 minutes
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
+    // Cache the response for 5 minutes
+    return NextResponse.json(
+      { providers: transformedProviders || [] },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=300", // 5 minutes
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
+    );
   } catch (err) {
     console.error("Error processing providers request:", err);
     return NextResponse.json(
-      { error: "Error processing providers request" },
-      { status: 500 }
+      { error: "Error processing providers request", providers: [] },
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
     );
   }
 }

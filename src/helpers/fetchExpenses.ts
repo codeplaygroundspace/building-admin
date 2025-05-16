@@ -73,29 +73,49 @@ export const fetchExpenses = async (
     url += `?${params.toString()}`;
   }
 
-  console.log(`Making API request to: ${url}`);
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-    },
-    next: { revalidate: 0 }, // Disable cache for debugging
-  });
+  try {
+    console.log(`Making API request to: ${url}`);
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+      },
+      next: { revalidate: 0 }, // Disable cache for debugging
+    });
 
-  if (!response.ok) {
-    console.error(`API error: ${response.status} ${response.statusText}`);
-    const errorText = await response.text();
-    console.error(`Response details:`, errorText);
-    throw new Error(`Error fetching expenses: ${response.statusText}`);
+    if (!response.ok) {
+      console.error(`API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`Response details:`, errorText);
+      // Return empty data instead of throwing
+      return { expenses: [], ...(forDropdown ? { months: [] } : {}) };
+    }
+
+    console.log("API response received, parsing JSON");
+    const data = await response.json();
+
+    // Handle dropdown request
+    if (forDropdown) {
+      if (data.months && Array.isArray(data.months)) {
+        console.log(`Received ${data.months.length} months`);
+        return { expenses: [], months: data.months };
+      } else {
+        console.warn("Invalid months format received from API:", data);
+        return { expenses: [], months: [] };
+      }
+    }
+
+    // Handle regular expenses request
+    if (data.expenses && Array.isArray(data.expenses)) {
+      console.log(`Received ${data.expenses.length} expenses`);
+      return { expenses: data.expenses };
+    }
+
+    // If data doesn't have the expected format, log a warning and return empty arrays
+    console.warn("Invalid data format received from API:", data);
+    return { expenses: [] };
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    // Return empty data on any exception
+    return { expenses: [], ...(forDropdown ? { months: [] } : {}) };
   }
-
-  console.log("API response received, parsing JSON");
-  const data: DashboardData = await response.json();
-  console.log(`Received ${data.expenses?.length || 0} expenses`);
-
-  if (!data.expenses || !Array.isArray(data.expenses)) {
-    console.error("Invalid data format received from API:", data);
-    throw new Error("Invalid data format received from API");
-  }
-
-  return data;
 };

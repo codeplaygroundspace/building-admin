@@ -2,13 +2,22 @@
 
 import { useAvailableMonths } from "./useAvailableMonths";
 import dayjs from "dayjs";
+import { BaseFetchedExpense } from "@/types/expense";
 
 // The useMonths custom hook fetches and processes a list of unique months from expense data
 // and makes it available to components. It returns an array of months and loading/error states.
 
 // Generate a list of months in Month YYYY format (like "January 2025") from YYYY-MM format (like "2025-01")
-const convertMonthsFormat = (months: string[]): string[] => {
-  return months.map((monthStr) => {
+const convertMonthsFormat = (
+  months: (string | BaseFetchedExpense)[]
+): string[] => {
+  return months.map((month) => {
+    // Handle case where month might be an object with expense_reporting_month
+    const monthStr =
+      typeof month === "object" && month?.expense_reporting_month
+        ? month.expense_reporting_month
+        : String(month);
+
     const [year, monthNum] = monthStr.split("-");
     const monthNames = [
       "January",

@@ -10,8 +10,19 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error("Global error:", error);
+    // Safely log the error to an error reporting service
+    if (error) {
+      // Create a safe copy of the error message to avoid any potential issues
+      const safeErrorMessage =
+        typeof error.message === "string" ? error.message : "Unknown error";
+      console.error("Global error:", {
+        message: safeErrorMessage,
+        name: error.name,
+        stack: error.stack,
+      });
+    } else {
+      console.error("Unknown global error (error object is undefined)");
+    }
   }, [error]);
 
   return (
@@ -22,8 +33,9 @@ export default function GlobalError({
             Error crítico
           </h2>
           <p className="text-gray-700 mb-6">
-            La aplicación ha encontrado un error grave. Por favor intente de
-            nuevo.
+            {error && typeof error.message === "string"
+              ? `Error: ${error.message}`
+              : "La aplicación ha encontrado un error grave. Por favor intente de nuevo."}
           </p>
           <button
             onClick={reset}

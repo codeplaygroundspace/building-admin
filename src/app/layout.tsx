@@ -7,6 +7,7 @@ import { BuildingProvider } from "@/contexts/building-context";
 import { MonthProvider } from "@/contexts/month-context";
 import { Toaster } from "@/components/ui/toast";
 import { TanstackProvider } from "@/lib/tanstack/tanstack-provider";
+import { AppDataProvider } from "@/context/AppDataProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,16 +34,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-100`}
       >
         <TanstackProvider>
-          <BuildingProvider initialBuildingId={buildingId}>
-            <MonthProvider buildingId={buildingId}>
-              <MainMenu />
-              <div className="md:pl-64 sidebar-collapsed:md:pl-16 flex flex-col min-h-screen transition-all duration-300">
-                <HeaderWrapper />
-                <main className="space-y-8 pb-8 px-4">{children}</main>
-              </div>
-              <Toaster />
-            </MonthProvider>
-          </BuildingProvider>
+          <AppDataProvider>
+            <BuildingProvider initialBuildingId={buildingId}>
+              <MonthProvider buildingId={buildingId}>
+                <MainMenu />
+                <div className="md:pl-64 sidebar-collapsed:md:pl-16 flex flex-col min-h-screen transition-all duration-300">
+                  <HeaderWrapper />
+                  <main className="space-y-8 pb-8 px-4">{children}</main>
+                </div>
+                <Toaster />
+              </MonthProvider>
+            </BuildingProvider>
+          </AppDataProvider>
         </TanstackProvider>
       </body>
     </html>

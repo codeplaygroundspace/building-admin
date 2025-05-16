@@ -12,8 +12,13 @@ export function useExpenses(options: FetchExpensesOptions = {}) {
   return useQuery({
     queryKey: expenseKeys.list(options),
     queryFn: async () => {
-      const data = await fetchExpenses(options);
-      return data.expenses || [];
+      try {
+        const data = await fetchExpenses(options);
+        return data.expenses || [];
+      } catch (error) {
+        console.error("Error in useExpenses:", error);
+        return [];
+      }
     },
     staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
     gcTime: 10 * 60 * 1000, // Keep unused data for 10 minutes
@@ -29,24 +34,45 @@ export function useAvailableMonths(buildingId?: string) {
   return useQuery({
     queryKey: expenseKeys.months(),
     queryFn: async () => {
-      const data = await fetchExpenses({ forDropdown: true, buildingId });
-      return data.expenses || [];
+      try {
+        const data = await fetchExpenses({ forDropdown: true, buildingId });
+        // Check if data.months exists first (preferred), otherwise fall back to data.expenses
+        if (data.months && Array.isArray(data.months)) {
+          return data.months;
+        }
+        // For backward compatibility or older data formats
+        return Array.isArray(data.expenses) ? data.expenses : [];
+      } catch (error) {
+        console.error("Error in useAvailableMonths:", error);
+        return [];
+      }
     },
     staleTime: 10 * 60 * 1000, // Months change less frequently
     gcTime: 15 * 60 * 1000,
     retry: 1,
-    select: (expenses) => {
+    select: (months) => {
+      if (!Array.isArray(months) || months.length === 0) {
+        return [];
+      }
+
       // Extract unique expense_reporting_month values
       const uniqueMonths = Array.from(
         new Set(
-          expenses
-            .map((expense) => expense.expense_reporting_month)
+          months
+            .filter(Boolean)
+            .map((month) =>
+              typeof month === "object" && month?.expense_reporting_month
+                ? month.expense_reporting_month
+                : month
+            )
             .filter(Boolean)
         )
       );
 
       // Sort months chronologically (YYYY-MM format)
-      return [...uniqueMonths].sort((a, b) => b.localeCompare(a));
+      return [...uniqueMonths].sort((a, b) =>
+        String(b).localeCompare(String(a))
+      );
     },
   });
 }
