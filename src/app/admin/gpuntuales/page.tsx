@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { formatUppercase } from "@/helpers/formatters";
-import { PlusCircle, X, Loader2 } from "lucide-react";
+import { formatCurrency } from "@/helpers/formatCurrency";
+import { PlusCircle, X } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Table,
   TableBody,
@@ -219,14 +221,6 @@ export default function AdminGastosPuntualesPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Format currency for display
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount);
   };
 
   // Handle sorting
@@ -536,7 +530,7 @@ export default function AdminGastosPuntualesPage() {
             >
               {isSubmitting || addBulkProjects.isPending ? (
                 <span className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="small" text="" className="mr-2" />
                   Agregando {projects.length} gastos puntuales...
                 </span>
               ) : (
@@ -612,8 +606,10 @@ export default function AdminGastosPuntualesPage() {
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">
                           <div className="flex justify-center items-center">
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            <span>Cargando datos...</span>
+                            <LoadingSpinner
+                              text="Cargando datos..."
+                              size="small"
+                            />
                           </div>
                         </TableCell>
                       </TableRow>

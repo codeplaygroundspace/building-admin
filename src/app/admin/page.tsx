@@ -17,7 +17,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import dayjs from "dayjs";
 import { formatUppercase } from "@/helpers/formatters";
-import { PlusCircle, X, Loader2 } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -34,6 +34,7 @@ import {
 } from "@/types/expense";
 import { useExpenses, useAddBulkExpenses } from "@/lib/tanstack/expenses";
 import { getBaseUrl } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function AdminPage() {
   const { building } = useBuilding();
@@ -537,7 +538,7 @@ export default function AdminPage() {
             >
               {isSubmitting || addBulkExpenses.isPending ? (
                 <span className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="small" text="" className="mr-2" />
                   Agregando {expenses.length} gastos...
                 </span>
               ) : (
@@ -580,8 +581,7 @@ export default function AdminPage() {
 
           {isLoadingExpenses ? (
             <div className="text-center py-8 flex justify-center items-center">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              <span>Cargando gastos...</span>
+              <LoadingSpinner text="Cargando gastos..." size="medium" />
             </div>
           ) : allExpenses.length === 0 ? (
             <div className="text-center py-8 text-gray-500">

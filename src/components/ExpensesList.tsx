@@ -4,7 +4,8 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useMonth } from "@/contexts/month-context";
 import { Expense } from "@/types/expense";
 import { calcTotalExpenses } from "@/helpers/calcTotalExpenses";
-import { Loader2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
 
 export default function ExpensesList({ buildingId }: { buildingId: string }) {
   const { selectedMonth } = useMonth();
@@ -22,18 +23,15 @@ export default function ExpensesList({ buildingId }: { buildingId: string }) {
   if (isLoading) {
     return (
       <div className="p-4 text-center flex justify-center items-center py-8">
-        <div className="flex flex-col items-center space-y-2">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Cargando gastos...</p>
-        </div>
+        <LoadingSpinner text="Cargando gastos..." size="medium" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500">
-        Error loading expenses: {error}
+      <div className="p-4 text-center">
+        <ErrorMessage message={`Error loading expenses: ${error}`} />
       </div>
     );
   }
