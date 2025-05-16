@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -81,13 +82,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-  // Add a modifier variant for sidebar collapsed state
-  safelist: [
-    {
-      pattern: /^sidebar-collapsed:.*$/,
-      variants: ["md"],
-    },
-  ],
+  plugins: [animate],
 };
 export default config;

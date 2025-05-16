@@ -48,10 +48,7 @@ export default function ClientPage() {
   return (
     <>
       {selectedMonth && displayText && (
-        <ExpensesHeader
-          selectedMonth={selectedMonth}
-          displayMonth={displayText}
-        />
+        <ExpensesHeader displayMonth={displayText} />
       )}
       <div className="flex flex-col space-y-6">
         <ExpenseSummary totalExpenses={totalExpenses} />
