@@ -14,10 +14,17 @@ src/
   │   └── tanstack/
   │       ├── tanstack-provider.tsx    # QueryClientProvider setup
   │       ├── expenses.ts     # Query hooks for expenses
-  │       └── query-keys.ts   # Query key factories
+  │       ├── query-keys.ts   # Query key factories
+  │       ├── prefetch-utils.ts # Prefetching utilities
+  │       └── PREFETCHING.md  # Prefetching documentation
+  ├── components/
+  │   └── prefetch/
+  │       ├── prefetch-query.tsx   # SSR prefetching component
+  │       └── prefetch-link.tsx    # Navigation prefetching component
   └── hooks/
       ├── useExpenses.tsx     # Custom hooks using TanStack Query
-      └── useAvailableMonths.tsx
+      ├── useAvailableMonths.tsx
+      └── usePrefetchOnHover.tsx # Prefetching hook
 ```
 
 ## Query Hooks
@@ -74,18 +81,51 @@ export const expenseKeys = {
 };
 ```
 
+## Prefetching Strategies
+
+We've implemented multiple prefetching strategies to improve performance:
+
+### Server-Side Prefetching (RSC)
+
+```tsx
+<PrefetchQuery
+  prefetchFn={async (queryClient) => {
+    await prefetchExpenses(queryClient, buildingId, currentMonth);
+  }}
+>
+  <ClientComponent />
+</PrefetchQuery>
+```
+
+### Client-Side Navigation Prefetching
+
+```tsx
+<PrefetchLink
+  href="/expenses"
+  prefetchType="expenses"
+  buildingId={buildingId}
+  month={selectedMonth}
+>
+  View Expenses
+</PrefetchLink>
+```
+
+See [src/lib/tanstack/PREFETCHING.md](src/lib/tanstack/PREFETCHING.md) for complete prefetching documentation.
+
 ## Best Practices
 
 1. **Always use the provided hooks** instead of directly calling `fetch` or other data fetching methods.
 2. **Use the query key factories** to ensure proper cache invalidation.
 3. **Leverage the query states** (isLoading, isPending, isError, etc.) to show appropriate UI feedback.
 4. **Use the DevTools** during development to understand query behavior and caching.
+5. **Implement prefetching** for common user paths to improve perceived performance.
 
 ## Performance Considerations
 
-- The default `staleTime` is set to 60 seconds, meaning that data won't be refetched for at least 60 seconds after the initial fetch.
-- Window focus refetching is enabled by default.
+- The default `staleTime` is set to 5 minutes (300,000ms), meaning that data won't be refetched for at least 5 minutes after the initial fetch.
+- Window focus refetching is disabled by default.
 - Queries will retry once on failure.
+- Prefetching is implemented for common navigation paths.
 
 You can override these defaults in individual query hooks as needed.
 
@@ -93,3 +133,4 @@ You can override these defaults in individual query hooks as needed.
 
 - [TanStack Query Documentation](https://tanstack.com/query/latest/docs/framework/react/overview)
 - [TanStack Query Examples](https://tanstack.com/query/latest/docs/framework/react/examples/basic)
+- [Next.js 15 Data Fetching](https://nextjs.org/docs/app/building-your-application/data-fetching)

@@ -20,24 +20,59 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import { PrefetchLink } from "@/components/prefetch/prefetch-link";
+import { useBuilding } from "@/contexts/building-context";
+import { useMonth } from "@/contexts/month-context";
 
 export default function MainMenu() {
   const pathname = usePathname();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuCollapsed, setIsDesktopMenuCollapsed] = useState(false);
+  const { building } = useBuilding();
+  const { selectedMonth } = useMonth();
 
   const navLinks = [
-    { icon: House, name: "Apartamentos", href: "/" },
-    { icon: Receipt, name: "Gastos comunes", href: "/gcomunes" },
-    { icon: ReceiptIcon, name: "Gastos puntuales", href: "/gpuntuales" },
-    { icon: Calendar, name: "Eventos", href: "/eventos" },
-    { icon: PiggyBank, name: "Fondo de reserva", href: "/fondo" },
-    { icon: Info, name: "Informacion", href: "/info" },
-    { icon: Settings, name: "A: Gastos comunes", href: "/admin" },
-    { icon: Settings, name: "A: Gastos puntuales", href: "/admin/gpuntuales" },
-    { icon: Settings, name: "A: Fondo de reserva", href: "/admin/fondo" },
-    { icon: Settings, name: "A: Pagos", href: "/pagos" },
+    { icon: House, name: "Apartamentos", href: "/", prefetchType: null },
+    {
+      icon: Receipt,
+      name: "Gastos comunes",
+      href: "/gcomunes",
+      prefetchType: "expenses",
+    },
+    {
+      icon: ReceiptIcon,
+      name: "Gastos puntuales",
+      href: "/gpuntuales",
+      prefetchType: "projects",
+    },
+    { icon: Calendar, name: "Eventos", href: "/eventos", prefetchType: null },
+    {
+      icon: PiggyBank,
+      name: "Fondo de reserva",
+      href: "/fondo",
+      prefetchType: null,
+    },
+    { icon: Info, name: "Informacion", href: "/info", prefetchType: null },
+    {
+      icon: Settings,
+      name: "A: Gastos comunes",
+      href: "/admin",
+      prefetchType: "expenses",
+    },
+    {
+      icon: Settings,
+      name: "A: Gastos puntuales",
+      href: "/admin/gpuntuales",
+      prefetchType: "projects",
+    },
+    {
+      icon: Settings,
+      name: "A: Fondo de reserva",
+      href: "/admin/fondo",
+      prefetchType: null,
+    },
+    { icon: Settings, name: "A: Pagos", href: "/pagos", prefetchType: null },
   ];
 
   // Close the mobile menu when path changes
@@ -82,6 +117,50 @@ export default function MainMenu() {
     };
   }, [isDesktop, isDesktopMenuCollapsed]);
 
+  // Function to render the appropriate link based on prefetchType
+  const renderLink = (
+    item: (typeof navLinks)[0],
+    classNames: string,
+    title?: string,
+    onClick?: () => void
+  ) => {
+    if (
+      item.prefetchType &&
+      (item.prefetchType === "expenses" ||
+        item.prefetchType === "projects" ||
+        item.prefetchType === "months")
+    ) {
+      return (
+        <PrefetchLink
+          href={item.href}
+          prefetchType={item.prefetchType}
+          buildingId={building?.id}
+          month={selectedMonth || undefined}
+          className={classNames}
+          title={title}
+          onClick={onClick}
+          scroll={false}
+        >
+          <item.icon className="h-5 w-5" />
+          {!isDesktopMenuCollapsed && <span>{item.name}</span>}
+        </PrefetchLink>
+      );
+    }
+
+    return (
+      <Link
+        href={item.href}
+        scroll={false}
+        title={title}
+        className={classNames}
+        onClick={onClick}
+      >
+        <item.icon className="h-5 w-5" />
+        {!isDesktopMenuCollapsed && <span>{item.name}</span>}
+      </Link>
+    );
+  };
+
   // Render desktop navigation (sidebar)
   if (isDesktop) {
     return (
@@ -115,27 +194,22 @@ export default function MainMenu() {
             <div className="px-3 py-2">
               <div className="space-y-1">
                 {navLinks.map((item) => {
-                  const isActive = pathname === item.href;
                   const isLastInfo = item.name === "Informacion";
                   return (
                     <React.Fragment key={item.name}>
-                      <Link
-                        href={item.href}
-                        scroll={false}
-                        title={isDesktopMenuCollapsed ? item.name : undefined}
-                        className={cn(
+                      {renderLink(
+                        item,
+                        cn(
                           "flex items-center rounded-md py-2 text-sm font-medium transition-colors",
                           isDesktopMenuCollapsed
                             ? "justify-center px-0"
                             : "px-3 gap-3",
-                          isActive
+                          item.href === pathname
                             ? "bg-primary/10 text-primary"
                             : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        )}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        {!isDesktopMenuCollapsed && <span>{item.name}</span>}
-                      </Link>
+                        ),
+                        isDesktopMenuCollapsed ? item.name : undefined
+                      )}
                       {isLastInfo && (
                         <hr
                           className="my-3 border-t border-gray-300 dark:border-gray-700"
@@ -190,24 +264,20 @@ export default function MainMenu() {
               <div className="px-3 py-2 mt-8">
                 <div className="space-y-1">
                   {navLinks.map((item) => {
-                    const isActive = pathname === item.href;
                     const isLastInfo = item.name === "Informacion";
                     return (
                       <React.Fragment key={item.name}>
-                        <Link
-                          href={item.href}
-                          scroll={false}
-                          className={cn(
+                        {renderLink(
+                          item,
+                          cn(
                             "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            isActive
+                            item.href === pathname
                               ? "bg-primary/10 text-primary"
                               : "text-gray-600 hover:bg-gray-50 hover:text-black"
-                          )}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <item.icon className="h-5 w-5" />
-                          <span>{item.name}</span>
-                        </Link>
+                          ),
+                          undefined,
+                          () => setIsMobileMenuOpen(false)
+                        )}
                         {isLastInfo && (
                           <hr
                             className="my-3 border-t border-gray-300 dark:border-gray-700"

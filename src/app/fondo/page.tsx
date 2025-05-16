@@ -6,7 +6,7 @@ import ExpenseSummary from "@/components/FinExpensesSummary";
 import { useExpenses } from "../../hooks/useExpenses";
 import { useBuilding } from "@/contexts/building-context";
 import { useMonth } from "@/contexts/month-context";
-import { Loader2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function Savings() {
   const { selectedMonth } = useMonth();
@@ -21,12 +21,7 @@ export default function Savings() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="flex flex-col items-center space-y-2">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
-            Cargando datos financieros...
-          </p>
-        </div>
+        <LoadingSpinner text="Cargando datos financieros..." size="large" />
       </div>
     );
   }
