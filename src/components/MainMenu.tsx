@@ -6,7 +6,6 @@ import {
   Info,
   Settings,
   Menu,
-  X,
   ChevronLeft,
   ChevronRight,
   Receipt as ReceiptIcon,
@@ -23,13 +22,20 @@ import React from "react";
 import { PrefetchLink } from "@/components/prefetch/prefetch-link";
 import { useBuilding } from "@/contexts/building-context";
 import { useMonth } from "@/contexts/month-context";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 export default function MainMenu() {
   const pathname = usePathname();
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuCollapsed, setIsDesktopMenuCollapsed] = useState(false);
-  const { building } = useBuilding();
+  const { building, isLoading: isBuildingLoading } = useBuilding();
   const { selectedMonth } = useMonth();
 
   const navLinks = [
@@ -74,34 +80,6 @@ export default function MainMenu() {
     },
     { icon: Settings, name: "A: Pagos", href: "/pagos", prefetchType: null },
   ];
-
-  // Close the mobile menu when path changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  // Handle click outside to close mobile menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const mobileMenu = document.getElementById("mobile-menu");
-      const menuButton = document.getElementById("menu-button");
-
-      if (
-        isMobileMenuOpen &&
-        mobileMenu &&
-        !mobileMenu.contains(event.target as Node) &&
-        menuButton &&
-        !menuButton.contains(event.target as Node)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isMobileMenuOpen]);
 
   // Add class to body to adjust layout based on sidebar state
   useEffect(() => {
@@ -161,6 +139,35 @@ export default function MainMenu() {
     );
   };
 
+  // Render the building name (logo)
+  const renderBuildingName = () => {
+    if (isBuildingLoading) {
+      return <div className="animate-pulse h-6 w-32 bg-gray-200 rounded"></div>;
+    }
+
+    if (!building) return null;
+
+    return (
+      <div
+        className={cn(
+          "px-3 py-4 mb-2",
+          isDesktopMenuCollapsed ? "text-center" : ""
+        )}
+      >
+        <h1
+          className={cn(
+            "font-bold",
+            isDesktopMenuCollapsed ? "text-sm" : "text-lg"
+          )}
+        >
+          {isDesktopMenuCollapsed
+            ? building.address.substring(0, 1)
+            : building.address}
+        </h1>
+      </div>
+    );
+  };
+
   // Render desktop navigation (sidebar)
   if (isDesktop) {
     return (
@@ -191,6 +198,9 @@ export default function MainMenu() {
 
         <ScrollArea className="h-[calc(100%-40px)]">
           <div className="flex flex-col py-3 h-full">
+            {/* Building Name (Logo) */}
+            {renderBuildingName()}
+
             <div className="px-3 py-2">
               <div className="space-y-1">
                 {navLinks.map((item) => {
@@ -227,46 +237,41 @@ export default function MainMenu() {
     );
   }
 
-  // Mobile navigation (hamburger menu and slide-out sidebar)
+  // Mobile navigation with shadcn Sheet component
   return (
-    <>
-      {/* Mobile hamburger menu button */}
-      <Button
-        id="menu-button"
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-30"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-      >
-        {isMobileMenuOpen ? (
-          <X className="h-6 w-6" />
-        ) : (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-4 left-4 z-30"
+          aria-label="Open menu"
+        >
           <Menu className="h-6 w-6" />
-        )}
-      </Button>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-full max-w-full sm:max-w-xs p-0">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Navigation Menu</SheetTitle>
+        </SheetHeader>
+        <ScrollArea className="h-full">
+          <div className="flex flex-col py-6 h-full">
+            {/* Building Name (Logo) */}
+            <div className="px-4 py-4 mb-2">
+              {building ? (
+                <h1 className="text-lg font-bold">{building.address}</h1>
+              ) : isBuildingLoading ? (
+                <div className="animate-pulse h-6 w-32 bg-gray-200 rounded"></div>
+              ) : null}
+            </div>
 
-      {/* Mobile sidebar */}
-      <div
-        id="mobile-menu"
-        className={cn(
-          "fixed inset-0 z-20 transform transition-transform duration-300 ease-in-out",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div
-          className="absolute inset-0 bg-black/50"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-        <div className="absolute top-0 left-0 bottom-0 w-64 bg-white shadow-lg">
-          <ScrollArea className="h-full">
-            <div className="flex flex-col py-6 h-full">
-              <div className="px-3 py-2 mt-8">
-                <div className="space-y-1">
-                  {navLinks.map((item) => {
-                    const isLastInfo = item.name === "Informacion";
-                    return (
-                      <React.Fragment key={item.name}>
+            <div className="px-3 py-2 mt-2">
+              <div className="space-y-1">
+                {navLinks.map((item) => {
+                  const isLastInfo = item.name === "Informacion";
+                  return (
+                    <React.Fragment key={item.name}>
+                      <SheetClose asChild>
                         {renderLink(
                           item,
                           cn(
@@ -274,25 +279,23 @@ export default function MainMenu() {
                             item.href === pathname
                               ? "bg-primary/10 text-primary"
                               : "text-gray-600 hover:bg-gray-50 hover:text-black"
-                          ),
-                          undefined,
-                          () => setIsMobileMenuOpen(false)
+                          )
                         )}
-                        {isLastInfo && (
-                          <hr
-                            className="my-3 border-t border-gray-300 dark:border-gray-700"
-                            aria-label="Admin section separator"
-                          />
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+                      </SheetClose>
+                      {isLastInfo && (
+                        <hr
+                          className="my-3 border-t border-gray-300 dark:border-gray-700"
+                          aria-label="Admin section separator"
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div>
-          </ScrollArea>
-        </div>
-      </div>
-    </>
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -191,3 +191,8 @@
   background-color: hsl(var(--category-electricidad-bg));
   color: hsl(var(--category-electricidad-text));
 }
+
+/* Remove the overlay from Sheet component */
+[data-radix-dialog-overlay] {
+  background-color: transparent !important;
+}
