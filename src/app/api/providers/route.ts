@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase/supabaseClient";
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 export async function GET() {
   try {
-    // Get all providers
-    const { data: providers, error } = await supabase
+    // More efficient query with only the needed fields
+    const { data, error } = await supabase
       .from("providers")
-      .select("id, name, provider_category_id");
+      .select("id, name, provider_category_id")
+      .order("name");
 
     if (error) {
       console.error("Error fetching providers:", error);
@@ -21,38 +17,30 @@ export async function GET() {
       );
     }
 
-    // Get all categories for reference
+    // Also get provider categories for a better user experience
     const { data: categories, error: categoriesError } = await supabase
       .from("provider_categories")
       .select("id, name");
 
     if (categoriesError) {
-      console.error("Error fetching provider categories:", categoriesError);
+      console.error("Error fetching categories:", categoriesError);
+      // Continue with providers only
     }
 
-    // Create a map of category IDs to names
-    const categoryMap: Record<string, string> = {};
-    if (categories) {
-      (categories as Category[]).forEach((category) => {
-        categoryMap[category.id] = category.name;
-      });
-    }
+    const result = {
+      providers: data || [],
+      categories: categories || [],
+    };
 
-    // Format the response safely
-    const formattedProviders = (providers || []).map((provider) => {
-      return {
-        id: provider.id,
-        name: provider.name,
-        category_id: provider.provider_category_id,
-        category_name:
-          provider.provider_category_id &&
-          categoryMap[provider.provider_category_id]
-            ? categoryMap[provider.provider_category_id]
-            : "Uncategorized",
-      };
+    // Cache the response for 15 minutes (providers change less frequently)
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": "public, max-age=900", // 15 minutes
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
     });
-
-    return NextResponse.json({ providers: formattedProviders });
   } catch (err) {
     console.error("Error processing providers request:", err);
     return NextResponse.json(
