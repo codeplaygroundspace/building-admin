@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase/supabaseClient";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 export async function GET() {
   try {
     // Get all providers
     const { data: providers, error } = await supabase
       .from("providers")
-      .select("id, name, provider_category_id, provider_categories(id, name)")
-      .order("name");
+      .select("id, name, provider_category_id");
 
     if (error) {
       console.error("Error fetching providers:", error);
@@ -17,34 +21,34 @@ export async function GET() {
       );
     }
 
+    // Get all categories for reference
+    const { data: categories, error: categoriesError } = await supabase
+      .from("provider_categories")
+      .select("id, name");
+
+    if (categoriesError) {
+      console.error("Error fetching provider categories:", categoriesError);
+    }
+
+    // Create a map of category IDs to names
+    const categoryMap: Record<string, string> = {};
+    if (categories) {
+      (categories as Category[]).forEach((category) => {
+        categoryMap[category.id] = category.name;
+      });
+    }
+
     // Format the response safely
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedProviders = (providers || []).map((provider: any) => {
-      let categoryName = "Uncategorized";
-
-      // Handle both possible structures that Supabase might return
-      if (provider.provider_categories) {
-        if (
-          Array.isArray(provider.provider_categories) &&
-          provider.provider_categories.length > 0
-        ) {
-          // If it's an array, take the first item's name
-          categoryName =
-            provider.provider_categories[0].name || "Uncategorized";
-        } else if (
-          typeof provider.provider_categories === "object" &&
-          provider.provider_categories.name
-        ) {
-          // If it's an object with name property
-          categoryName = provider.provider_categories.name;
-        }
-      }
-
+    const formattedProviders = (providers || []).map((provider) => {
       return {
         id: provider.id,
         name: provider.name,
         category_id: provider.provider_category_id,
-        category_name: categoryName,
+        category_name:
+          provider.provider_category_id &&
+          categoryMap[provider.provider_category_id]
+            ? categoryMap[provider.provider_category_id]
+            : "Uncategorized",
       };
     });
 
