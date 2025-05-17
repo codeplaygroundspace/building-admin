@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../../lib/supabase/supabaseClient";
+import { getServerSupabaseClient } from "@/lib/supabase/supabaseServer";
 
 // Define interfaces for the data structure from Supabase
 interface ProviderCategory {
@@ -38,6 +38,9 @@ interface TransformedExpense {
 
 export async function GET(request: Request) {
   try {
+    // Get server-side Supabase client
+    const supabase = getServerSupabaseClient();
+
     // Parse URL and get query parameters
     const url = new URL(request.url);
     const buildingId = url.searchParams.get("building_id");

@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Receipt as ReceiptIcon,
   Calendar,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -95,6 +96,13 @@ export default function MainMenu() {
     };
   }, [isDesktop, isDesktopMenuCollapsed]);
 
+  // Handle logout function
+  const handleLogout = () => {
+    console.log("Logout clicked");
+    // Logout logic will be implemented later
+    window.location.href = "/login";
+  };
+
   // Function to render the appropriate link based on prefetchType
   const renderLink = (
     item: (typeof navLinks)[0],
@@ -136,6 +144,27 @@ export default function MainMenu() {
         <item.icon className="h-5 w-5" />
         {!isDesktopMenuCollapsed && <span>{item.name}</span>}
       </Link>
+    );
+  };
+
+  // Render logout button
+  const renderLogoutButton = (isMobile = false) => {
+    const classNames = cn(
+      "flex items-center rounded-md py-2 text-sm font-medium transition-colors text-red-600 hover:bg-red-50",
+      isDesktopMenuCollapsed && !isMobile ? "justify-center px-0" : "px-3 gap-3"
+    );
+
+    return (
+      <button
+        onClick={handleLogout}
+        className={classNames}
+        title={
+          isDesktopMenuCollapsed && !isMobile ? "Cerrar sesión" : undefined
+        }
+      >
+        <LogOut className="h-5 w-5" />
+        {(!isDesktopMenuCollapsed || isMobile) && <span>Cerrar sesión</span>}
+      </button>
     );
   };
 
@@ -229,6 +258,12 @@ export default function MainMenu() {
                     </React.Fragment>
                   );
                 })}
+
+                <hr
+                  className="my-3 border-t border-gray-300 dark:border-gray-700"
+                  aria-label="Logout separator"
+                />
+                {renderLogoutButton()}
               </div>
             </div>
           </div>
@@ -291,6 +326,12 @@ export default function MainMenu() {
                     </React.Fragment>
                   );
                 })}
+
+                <hr
+                  className="my-3 border-t border-gray-300 dark:border-gray-700"
+                  aria-label="Logout separator"
+                />
+                <SheetClose asChild>{renderLogoutButton(true)}</SheetClose>
               </div>
             </div>
           </div>
