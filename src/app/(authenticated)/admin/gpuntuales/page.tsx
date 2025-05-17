@@ -393,154 +393,168 @@ export default function AdminGastosPuntualesPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <>
+      <h1 className="text-2xl font-bold mb-6">A: Gastos puntuales</h1>
       <CardWrapper title="Agregar gastos puntuales">
-        <form onSubmit={handleSubmit} className="space-y-6 p-4">
-          {/* Project list */}
-          <div className="space-y-8">
-            {projects.map((project, index) => (
-              <div key={project.id} className="border rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-3 bg-white px-2 text-sm font-medium text-gray-600">
-                  Gasto Puntual #{index + 1}
-                </div>
+        {isLoadingProviders ? (
+          <div className="flex justify-center py-4">
+            <LoadingSpinner text="Cargando proveedores..." />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Projects list */}
+            <div className="space-y-8">
+              {projects.map((project, index) => (
+                <div
+                  key={project.id}
+                  className="border rounded-lg p-4 relative"
+                >
+                  <div className="absolute -top-3 left-3 bg-white px-2 text-sm font-medium text-gray-600">
+                    Gasto Puntual #{index + 1}
+                  </div>
 
-                {projects.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 text-gray-500 hover:text-red-500"
-                    onClick={() => handleRemoveProject(project.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`provider-${project.id}`}>Proveedor:</Label>
-                    <Select
-                      value={project.provider_id}
-                      onValueChange={(value) =>
-                        handleProviderChange(value, project.id)
-                      }
-                      required
+                  {projects.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 h-6 w-6 text-gray-500 hover:text-red-500"
+                      onClick={() => handleRemoveProject(project.id)}
                     >
-                      <SelectTrigger id={`provider-${project.id}`}>
-                        <SelectValue placeholder="Selecciona un proveedor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(providersByCategory).map(
-                          ([category, providers]: [string, Provider[]]) => (
-                            <div key={category}>
-                              <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 bg-gray-50">
-                                {category}
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`provider-${project.id}`}>
+                        Proveedor:
+                      </Label>
+                      <Select
+                        value={project.provider_id}
+                        onValueChange={(value) =>
+                          handleProviderChange(value, project.id)
+                        }
+                        required
+                      >
+                        <SelectTrigger id={`provider-${project.id}`}>
+                          <SelectValue placeholder="Selecciona un proveedor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(providersByCategory).map(
+                            ([category, providers]: [string, Provider[]]) => (
+                              <div key={category}>
+                                <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 bg-gray-50">
+                                  {category}
+                                </div>
+                                {providers.map((provider: Provider) => (
+                                  <SelectItem
+                                    key={provider.id}
+                                    value={provider.id}
+                                  >
+                                    {provider.name}
+                                  </SelectItem>
+                                ))}
                               </div>
-                              {providers.map((provider: Provider) => (
-                                <SelectItem
-                                  key={provider.id}
-                                  value={provider.id}
-                                >
-                                  {provider.name}
-                                </SelectItem>
-                              ))}
-                            </div>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`cost-${project.id}`}>Costo:</Label>
-                    <Input
-                      id={`cost-${project.id}`}
-                      name="cost"
-                      type="number"
-                      step="0.01"
-                      value={project.cost}
-                      onChange={(e) => handleInputChange(e, project.id)}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`cost-${project.id}`}>Costo:</Label>
+                      <Input
+                        id={`cost-${project.id}`}
+                        name="cost"
+                        type="number"
+                        step="0.01"
+                        value={project.cost}
+                        onChange={(e) => handleInputChange(e, project.id)}
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`description-${project.id}`}>
-                      Descripción del gasto puntual (opcional):
-                    </Label>
-                    <Textarea
-                      id={`description-${project.id}`}
-                      name="description"
-                      value={project.description}
-                      onChange={(e) => handleInputChange(e, project.id)}
-                      placeholder="Descripción del gasto puntual"
-                      className="min-h-[80px]"
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`description-${project.id}`}>
+                        Descripción del gasto puntual (opcional):
+                      </Label>
+                      <Textarea
+                        id={`description-${project.id}`}
+                        name="description"
+                        value={project.description}
+                        onChange={(e) => handleInputChange(e, project.id)}
+                        placeholder="Descripción del gasto puntual"
+                        className="min-h-[80px]"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`status-${project.id}`}>Estado:</Label>
-                    <Select
-                      value={project.status ? "true" : "false"}
-                      onValueChange={(value) => {
-                        setProjects((prevProjects) =>
-                          prevProjects.map((p) =>
-                            p.id === project.id
-                              ? { ...p, status: value === "true" }
-                              : p
-                          )
-                        );
-                      }}
-                    >
-                      <SelectTrigger id={`status-${project.id}`}>
-                        <SelectValue placeholder="Seleccionar estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Activo</SelectItem>
-                        <SelectItem value="false">Inactivo</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Label htmlFor={`status-${project.id}`}>Estado:</Label>
+                      <Select
+                        value={project.status ? "true" : "false"}
+                        onValueChange={(value) => {
+                          setProjects((prevProjects) =>
+                            prevProjects.map((p) =>
+                              p.id === project.id
+                                ? { ...p, status: value === "true" }
+                                : p
+                            )
+                          );
+                        }}
+                      >
+                        <SelectTrigger id={`status-${project.id}`}>
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Activo</SelectItem>
+                          <SelectItem value="false">Inactivo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Add more projects button */}
-          {canAddMoreProjects && (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-dashed"
-              onClick={handleAddProject}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Agregar otro gasto puntual
-            </Button>
-          )}
+            {/* Add more projects button */}
+            {canAddMoreProjects && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={handleAddProject}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar otro gasto puntual
+              </Button>
+            )}
 
-          <div className="flex w-full">
-            <Button
-              type="submit"
-              disabled={
-                isSubmitting || isLoadingProviders || addBulkProjects.isPending
-              }
-              className="w-full bg-black hover:bg-gray-800"
-            >
-              {isSubmitting || addBulkProjects.isPending ? (
-                <span className="flex items-center">
-                  <LoadingSpinner size="small" text="" className="mr-2" />
-                  Agregando {projects.length} gastos puntuales...
-                </span>
-              ) : (
-                `Agregar ${projects.length} gasto${
-                  projects.length > 1 ? "s" : ""
-                } puntual${projects.length > 1 ? "es" : ""}`
-              )}
-            </Button>
-          </div>
-        </form>
+            <div className="flex w-full">
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  isLoadingProviders ||
+                  addBulkProjects.isPending
+                }
+                className="w-full bg-black hover:bg-gray-800"
+              >
+                {isSubmitting || addBulkProjects.isPending ? (
+                  <span className="flex items-center">
+                    <LoadingSpinner size="small" text="" className="mr-2" />
+                    Agregando {projects.length} gastos puntuales...
+                  </span>
+                ) : (
+                  `Agregar ${projects.length} gasto${
+                    projects.length > 1 ? "s" : ""
+                  } puntual${projects.length > 1 ? "es" : ""}`
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
       </CardWrapper>
 
       {/* Projects Table */}
@@ -772,6 +786,6 @@ export default function AdminGastosPuntualesPage() {
           )}
         </div>
       </CardWrapper>
-    </div>
+    </>
   );
 }

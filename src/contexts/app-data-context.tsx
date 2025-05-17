@@ -1,7 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { Expense } from "@/types/expense";
+import { createClientSide } from "@/lib/auth/client";
 
 // Define types for providers and projects
 interface Provider {
@@ -22,6 +29,20 @@ interface Project {
   building_id?: string | null;
 }
 
+export interface Building {
+  id: string;
+  address: string;
+  total_units: number;
+  created_at: string;
+}
+
+export interface ExpenseMonth {
+  id: string;
+  building_id: string;
+  month: string;
+  created_at: string;
+}
+
 // Define context type
 interface AppDataContextType {
   expenses: Expense[];
@@ -31,6 +52,14 @@ interface AppDataContextType {
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
+  buildings: Building[];
+  selectedBuilding: Building | null;
+  expenseMonths: ExpenseMonth[];
+  isLoadingBuildings: boolean;
+  isLoadingMonths: boolean;
+  fetchBuildings: () => Promise<void>;
+  setSelectedBuilding: (building: Building | null) => void;
+  fetchMonths: (buildingId: string | null) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -42,6 +71,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [months, setMonths] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
+    null
+  );
+  const [expenseMonths, setExpenseMonths] = useState<ExpenseMonth[]>([]);
+  const [isLoadingBuildings, setIsLoadingBuildings] = useState(true);
+  const [isLoadingMonths, setIsLoadingMonths] = useState(false);
 
   const buildingId = "cd4d2980-8c5e-444e-9840-6859582c0ea5"; // Default building ID
 
@@ -129,10 +166,90 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Initial data fetch
+  const fetchBuildings = useCallback(async () => {
+    setIsLoadingBuildings(true);
+    try {
+      const supabase = await createClientSide();
+      const { data, error } = await supabase
+        .from("buildings")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setBuildings(data || []);
+
+      // Set the first building as selected if there is no selected building
+      if (!selectedBuilding && data && data.length > 0) {
+        setSelectedBuilding(data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching buildings:", error);
+    } finally {
+      setIsLoadingBuildings(false);
+    }
+  }, [selectedBuilding]);
+
+  const fetchMonths = useCallback(async (buildingId: string | null) => {
+    if (!buildingId) return;
+
+    setIsLoadingMonths(true);
+    try {
+      // Use existing expenses API with forDropdown parameter
+      const monthsRes = await fetch(
+        `/api/expenses?building_id=${buildingId}&forDropdown=true`
+      );
+
+      if (!monthsRes.ok) {
+        throw new Error(`Failed to fetch months: ${monthsRes.statusText}`);
+      }
+
+      const monthsData = await monthsRes.json();
+
+      // Validate the response format
+      if (!monthsData.months || !Array.isArray(monthsData.months)) {
+        console.error("Invalid months data format:", monthsData);
+        throw new Error("Invalid months data format received from API");
+      }
+
+      // Convert the month strings to ExpenseMonth objects
+      const monthObjects: ExpenseMonth[] = monthsData.months.map(
+        (month: string) => ({
+          id: `${buildingId}-${month}`, // Create a synthetic ID
+          building_id: buildingId,
+          month: month,
+          created_at: new Date().toISOString(),
+        })
+      );
+
+      setExpenseMonths(monthObjects);
+    } catch (error) {
+      console.error(
+        "Error fetching months:",
+        error instanceof Error ? error.message : error
+      );
+      // Don't set state error since this is a background fetch
+      // Return empty array to prevent UI from breaking
+      setExpenseMonths([]);
+    } finally {
+      setIsLoadingMonths(false);
+    }
+  }, []); // Empty dependency array since it doesn't use any props or state
+
+  // Initial data fetches
   useEffect(() => {
     fetchAllData();
-  }, []);
+    fetchBuildings();
+  }, [fetchBuildings]);
+
+  // Fetch months when a building is selected
+  useEffect(() => {
+    if (selectedBuilding) {
+      fetchMonths(selectedBuilding.id);
+    }
+  }, [selectedBuilding, fetchMonths]);
 
   return (
     <AppDataContext.Provider
@@ -144,6 +261,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error,
         refreshData: fetchAllData,
+        buildings,
+        selectedBuilding,
+        expenseMonths,
+        isLoadingBuildings,
+        isLoadingMonths,
+        fetchBuildings,
+        setSelectedBuilding,
+        fetchMonths,
       }}
     >
       {children}

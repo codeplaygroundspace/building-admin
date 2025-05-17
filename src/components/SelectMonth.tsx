@@ -1,12 +1,15 @@
 //The SelectMonth component itself does NOT fetch or filter data—it only displays the dropdown.
 "use client";
 import { Dropdown } from "./Dropdown";
-import { useMonth } from "../contexts/month-context";
-import { useAppData } from "@/context/AppDataProvider";
+import { useMonth } from "@/contexts/month-context";
+import { useAppData } from "@/contexts/app-data-context";
 
 export default function SelectMonth() {
   const { months: contextMonths, selectedMonth, setSelectedMonth } = useMonth();
-  const { months: appDataMonths, isLoading, error } = useAppData();
+  const { expenseMonths, isLoadingMonths, error } = useAppData();
+
+  // Extract month strings from expenseMonths objects if available
+  const appDataMonths = expenseMonths?.map((m) => m.month) || [];
 
   // Use months from AppDataProvider if available, otherwise fall back to context
   const months = appDataMonths?.length > 0 ? appDataMonths : contextMonths;
@@ -75,7 +78,7 @@ export default function SelectMonth() {
       selectedItem={selectedMonth}
       onSelect={setSelectedMonth}
       error={error}
-      isLoading={isLoading}
+      isLoading={isLoadingMonths}
       itemFormatter={formatMonth}
     />
   );

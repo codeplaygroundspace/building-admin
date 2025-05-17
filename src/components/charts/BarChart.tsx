@@ -9,8 +9,8 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
-import CardWrapper from "../CardWrapper";
-import { formatCurrency } from "../../helpers/formatCurrency";
+import CardWrapper from "@/components/CardWrapper";
+import { formatCurrency } from "@/helpers/formatCurrency";
 import { Expense } from "@/types/expense";
 import { getCategoryColor } from "@/helpers/getCategoryColor";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
