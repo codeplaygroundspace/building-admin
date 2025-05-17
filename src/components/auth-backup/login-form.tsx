@@ -2,25 +2,35 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn } from "@/actions/auth";
+import { useFormState, useFormStatus } from "react-dom";
+
+// Status component to show loading state
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+    >
+      {pending ? "Procesando..." : "Entrar"}
+    </button>
+  );
+}
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [state, formAction] = useFormState(signIn, null);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Login logic will be implemented later
-    console.log("Login attempted", { email, password });
-  };
-
   return (
     <div className="mt-8 bg-white px-6 py-8 shadow sm:rounded-lg sm:px-10">
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" action={formAction}>
         <div>
           <label
             htmlFor="email"
@@ -35,8 +45,6 @@ export default function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
           </div>
@@ -56,8 +64,6 @@ export default function LoginForm() {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
             <button
@@ -78,13 +84,12 @@ export default function LoginForm() {
           </div>
         </div>
 
+        {state?.error && (
+          <div className="text-red-600 text-sm font-medium">{state.error}</div>
+        )}
+
         <div>
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Entrar
-          </button>
+          <SubmitButton />
         </div>
       </form>
     </div>

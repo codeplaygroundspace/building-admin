@@ -1,11 +1,14 @@
-import ApartmentFinancialBreakdown from "@/components/FinApartmentFinancialBreakdown";
-import FinTotal from "@/components/FinTotal";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
 
-export default function Home() {
-  return (
-    <>
-      <FinTotal />
-      <ApartmentFinancialBreakdown />
-    </>
-  );
+export default async function RootPage() {
+  const session = await getSession();
+
+  // If the user is not logged in, redirect to login
+  if (!session) {
+    redirect("/login");
+  }
+
+  // If logged in, redirect to the apartments page
+  redirect("/apartamentos");
 }

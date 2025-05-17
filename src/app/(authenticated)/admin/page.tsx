@@ -401,154 +401,163 @@ export default function AdminPage() {
   }, [selectedMonth, rowsPerPage]);
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <CardWrapper title="Agregar gastos">
-        <form onSubmit={handleSubmit} className="space-y-6 p-4">
-          {/* Common month selector for all expenses */}
-          <div className="space-y-2">
-            <Label htmlFor="expense_reporting_month">
-              Mes al que reportan todos los gastos (YYYY-MM):
-            </Label>
-            <Input
-              id="expense_reporting_month"
-              name="expense_reporting_month"
-              type="month"
-              value={expenses[0]?.expense_reporting_month || ""}
-              onChange={handleMonthChange}
-              required
-            />
+    <>
+      <h1 className="text-2xl font-bold mb-6">A: Gastos comunes</h1>
+      <CardWrapper title="Agregar gastos comunes">
+        {isLoadingProviders ? (
+          <div className="flex justify-center py-4">
+            <LoadingSpinner text="Cargando proveedores..." />
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Month selector for all expenses */}
+            <div className="space-y-2">
+              <Label htmlFor="expense_reporting_month">Mes de reporte</Label>
+              <Input
+                id="expense_reporting_month"
+                type="month"
+                value={expenses[0]?.expense_reporting_month || ""}
+                onChange={handleMonthChange}
+                required
+                className="max-w-xs"
+              />
+            </div>
 
-          {/* Expenses list */}
-          <div className="space-y-8">
-            {expenses.map((exp, index) => (
-              <div key={exp.id} className="border rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-3 bg-white px-2 text-sm font-medium text-gray-600">
-                  Gasto #{index + 1}
-                </div>
+            {/* Expenses list */}
+            <div className="space-y-8">
+              {expenses.map((exp, index) => (
+                <div key={exp.id} className="border rounded-lg p-4 relative">
+                  <div className="absolute -top-3 left-3 bg-white px-2 text-sm font-medium text-gray-600">
+                    Gasto #{index + 1}
+                  </div>
 
-                {expenses.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 text-gray-500 hover:text-red-500"
-                    onClick={() => handleRemoveExpense(exp.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-
-                <div className="flex flex-col space-y-4 mt-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`provider_id-${exp.id}`}>Proveedor:</Label>
-                    <Select
-                      value={exp.provider_id}
-                      onValueChange={(value) =>
-                        handleProviderChange(value, exp.id)
-                      }
-                      disabled={isLoadingProviders}
+                  {expenses.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 h-6 w-6 text-gray-500 hover:text-red-500"
+                      onClick={() => handleRemoveExpense(exp.id)}
                     >
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isLoadingProviders
-                              ? "Cargando lista de proveedores..."
-                              : "Seleccionar proveedor"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(providersByCategory).map(
-                          ([category, categoryProviders]: [
-                            string,
-                            Provider[]
-                          ]) => (
-                            <div key={category}>
-                              <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">
-                                {category}
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+
+                  <div className="flex flex-col space-y-4 mt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`provider_id-${exp.id}`}>
+                        Proveedor:
+                      </Label>
+                      <Select
+                        value={exp.provider_id}
+                        onValueChange={(value) =>
+                          handleProviderChange(value, exp.id)
+                        }
+                        disabled={isLoadingProviders}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              isLoadingProviders
+                                ? "Cargando lista de proveedores..."
+                                : "Seleccionar proveedor"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(providersByCategory).map(
+                            ([category, categoryProviders]: [
+                              string,
+                              Provider[]
+                            ]) => (
+                              <div key={category}>
+                                <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">
+                                  {category}
+                                </div>
+                                {categoryProviders.map((provider: Provider) => (
+                                  <SelectItem
+                                    key={provider.id}
+                                    value={provider.id}
+                                  >
+                                    {formatUppercase(provider.name)}
+                                  </SelectItem>
+                                ))}
                               </div>
-                              {categoryProviders.map((provider: Provider) => (
-                                <SelectItem
-                                  key={provider.id}
-                                  value={provider.id}
-                                >
-                                  {formatUppercase(provider.name)}
-                                </SelectItem>
-                              ))}
-                            </div>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`amount-${exp.id}`}>Monto:</Label>
-                    <Input
-                      id={`amount-${exp.id}`}
-                      name="amount"
-                      type="number"
-                      step="0.01"
-                      value={exp.amount}
-                      onChange={(e) => handleInputChange(e, exp.id)}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`amount-${exp.id}`}>Monto:</Label>
+                      <Input
+                        id={`amount-${exp.id}`}
+                        name="amount"
+                        type="number"
+                        step="0.01"
+                        value={exp.amount}
+                        onChange={(e) => handleInputChange(e, exp.id)}
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`description-${exp.id}`}>
-                      Descripcion de gasto (opcional):
-                    </Label>
-                    <Textarea
-                      id={`description-${exp.id}`}
-                      name="description"
-                      value={exp.description}
-                      onChange={(e) => handleInputChange(e, exp.id)}
-                      placeholder="Descripcion de gasto si fuera necesario"
-                      className="min-h-[80px]"
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor={`description-${exp.id}`}>
+                        Descripcion de gasto (opcional):
+                      </Label>
+                      <Textarea
+                        id={`description-${exp.id}`}
+                        name="description"
+                        value={exp.description}
+                        onChange={(e) => handleInputChange(e, exp.id)}
+                        placeholder="Descripcion de gasto si fuera necesario"
+                        className="min-h-[80px]"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Add more expenses button */}
-          {canAddMoreExpenses && (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-dashed"
-              onClick={handleAddExpense}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Agregar otro gasto
-            </Button>
-          )}
+            {/* Add more expenses button */}
+            {canAddMoreExpenses && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={handleAddExpense}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar otro gasto
+              </Button>
+            )}
 
-          <div className="flex w-full">
-            <Button
-              type="submit"
-              disabled={
-                isSubmitting || isLoadingProviders || addBulkExpenses.isPending
-              }
-              className="w-full bg-black hover:bg-gray-800"
-            >
-              {isSubmitting || addBulkExpenses.isPending ? (
-                <span className="flex items-center">
-                  <LoadingSpinner size="small" text="" className="mr-2" />
-                  Agregando {expenses.length} gastos...
-                </span>
-              ) : (
-                `Agregar ${expenses.length} gasto${
-                  expenses.length > 1 ? "s" : ""
-                }`
-              )}
-            </Button>
-          </div>
-        </form>
+            <div className="flex w-full">
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  isLoadingProviders ||
+                  addBulkExpenses.isPending
+                }
+                className="w-full bg-black hover:bg-gray-800"
+              >
+                {isSubmitting || addBulkExpenses.isPending ? (
+                  <span className="flex items-center">
+                    <LoadingSpinner size="small" text="" className="mr-2" />
+                    Agregando {expenses.length} gastos...
+                  </span>
+                ) : (
+                  `Agregar ${expenses.length} gasto${
+                    expenses.length > 1 ? "s" : ""
+                  }`
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
       </CardWrapper>
 
       {/* Expenses Table */}
@@ -721,6 +730,6 @@ export default function AdminPage() {
           )}
         </div>
       </CardWrapper>
-    </div>
+    </>
   );
 }

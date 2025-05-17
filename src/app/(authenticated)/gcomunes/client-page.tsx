@@ -3,34 +3,45 @@
 import ExpenseBreakdown from "@/components/FinExpenseBreakdown";
 import ExpenseSummary from "@/components/FinExpensesSummary";
 import BarChartComponent from "@/components/charts/BarChart";
-import { useExpenses } from "../../../hooks/useExpenses";
 import ExpensesHeader from "@/components/ExpensesHeader";
 import { useBuilding } from "@/contexts/building-context";
 import { useMonth } from "@/contexts/month-context";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAppData } from "@/contexts/app-data-context";
 import { ErrorMessage } from "@/components/ui/error-message";
 
 export default function ClientPage() {
   const { selectedMonth } = useMonth();
   const { building } = useBuilding();
+  const { expenses, isLoading, error } = useAppData();
 
-  // Use the hook with modern property names
-  const {
-    data: filteredExpenses,
-    isLoading,
-    error,
-    totalExpenses,
-  } = useExpenses({
-    month: selectedMonth,
-    buildingId: building?.id,
-  });
+  // Filter expenses for the current month and building
+  const filteredExpenses = expenses.filter(
+    (expense) =>
+      expense.expense_reporting_month === selectedMonth &&
+      expense.building_id === building?.id
+  );
+
+  // Calculate total expenses
+  const totalExpenses = filteredExpenses.reduce(
+    (total, expense) => total + (expense.amount || 0),
+    0
+  );
 
   if (isLoading) {
-    return <LoadingSpinner text="Cargando gastos..." size="large" fullScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner text="Cargando gastos..." size="large" />
+      </div>
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={`Error: ${error}`} fullScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <ErrorMessage message={`Error: ${error}`} fullScreen />
+      </div>
+    );
   }
 
   return (

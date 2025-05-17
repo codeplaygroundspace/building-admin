@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppData } from "@/context/AppDataProvider";
+import { useAppData } from "@/contexts/app-data-context";
 import {
   Select,
   SelectContent,
@@ -18,7 +18,10 @@ export function MonthsDropdown({
   onSelectMonth,
   currentMonth,
 }: MonthsDropdownProps) {
-  const { months, isLoading } = useAppData();
+  const { expenseMonths, isLoadingMonths: isLoading } = useAppData();
+
+  // Extract month strings from expenseMonths objects
+  const months = expenseMonths?.map((m) => m.month) || [];
 
   // Ensure months is always an array
   const safeMonths = Array.isArray(months) ? months : [];

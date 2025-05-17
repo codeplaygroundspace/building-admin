@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Building } from "../types/building";
-import { useBuildingAddress } from "../hooks/useBuildingAddress";
+import { Building } from "@/types/building";
+import { useBuildingAddress } from "@/hooks/useBuildingAddress";
 
 interface BuildingContextProps {
   building: Building | null;

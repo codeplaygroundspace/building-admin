@@ -39,6 +39,7 @@ export interface FetchedProject {
   provider_category: string;
   building_id?: string | null;
   building_address?: string | null;
+  project_month?: string | null;
 }
 
 /**
