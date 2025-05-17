@@ -1,11 +1,6 @@
-import ApartmentFinancialBreakdown from "@/components/FinApartmentFinancialBreakdown";
-import FinTotal from "@/components/FinTotal";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return (
-    <>
-      <FinTotal />
-      <ApartmentFinancialBreakdown />
-    </>
-  );
+export default function AuthenticatedRootPage() {
+  // Redirect to dashboard as the main entry point
+  redirect("/dashboard");
 }
